@@ -1,7 +1,8 @@
-# [GameOn](https://betxllc.atlassian.net/wiki/spaces/BL/pages/33122/BetXNode)
-GameOn is the server hosting IPFS and the Blockchain.  Will expose a Wallet API.  This will eventually wind up on a docker image for ease of deploys.
+# [CryptReserve](https://www.blockchainbpi.com)
+CryptReserve is a server exposing IPFS using Blockchain for permissioning and exposed vias a RestAPI.
 
-## GameOn Passport System Setup and Installation
+
+## CryptReserve Installation Script
 Run install.sh (./install.sh)
 
 ### Dependenices
