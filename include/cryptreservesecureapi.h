@@ -1,8 +1,8 @@
 /**
  *
- * Gameon Secured API OAuth2 Authorization token check
+ * CryptReserve Secured API OAuth2 Authorization token check
  *
- * Copyright 2019 BetXLLC Ed Vergara <ed@betxllc.com>
+ * Copyright 2019 BlockchainBPI Ed Vergara <blockchainbpi@gmail.com>
  *
  * Version 1
  *

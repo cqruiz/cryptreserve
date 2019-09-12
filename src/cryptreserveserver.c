@@ -55,7 +55,7 @@ int main(int argc, const char* argv[] )
     pthread_join(restAPIServer, NULL);
     pthread_join(curlIPFSClient, NULL);
 
-    printf("Exiting GameOn...");
+    printf("Exiting CryptReserve...");
 
 }
 
