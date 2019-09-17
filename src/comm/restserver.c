@@ -91,12 +91,14 @@ int callback_auth_basic (const struct _u_request * request, struct _u_response *
  */
 int callback_create_user_login (const struct _u_request * request, struct _u_response * response, void * user_data) {
 	y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_create_user");
-	
+
+	// Create a wallet address from a managed ethereum node
+	// create a smart contract for managing this users session token and documents.
 	char *body;
 	char reqData[128];
 	strcpy(reqData, (char *)request->binary_body);
 
-	printf("Creating user %s\n", reqData);
+	printf("Creating user %s Len:%d\n", reqData, strlen(reqData));
 	y_log_message(Y_LOG_LEVEL_DEBUG, "cRestServerAPI::allback_create_user %s", reqData);
 
 	pUser pusr = malloc(sizeof(User));
@@ -213,20 +215,11 @@ int callback_create_user_login (const struct _u_request * request, struct _u_res
 	}
 */
 
-
+    //Client API
 /**
- * Callback function for creating a user login (username/password)
+ * Callback function for creating a client account
  */
-    int callback_create_passport(const struct _u_request * request, struct _u_response * response, void * user_data) {
-
-        return U_CALLBACK_CONTINUE;
-    }  
-
-    //Issuer API
-/**
- * Callback function for creating a user login (username/password)
- */
-    int callback_create_issuer_login(const struct _u_request * request, struct _u_response * response, void * user_data) {
+    int callback_create_client_account(const struct _u_request * request, struct _u_response * response, void * user_data) {
 		
 		y_log_message(Y_LOG_LEVEL_DEBUG, "callback_create_issuer_login");
 
@@ -267,65 +260,44 @@ int callback_create_user_login (const struct _u_request * request, struct _u_res
     }  
 	
 /**
- * Callback function for creating a user login (username/password)
+ * Callback function for creating a client account
  */
-    int callback_issuer_logon(const struct _u_request * request, struct _u_response * response, void * user_data) {
-		
-		y_log_message(Y_LOG_LEVEL_DEBUG, "callback_issuer_logon");
-
-    	char reqData[128];
-    	strcpy(reqData, (char *)request->binary_body);
-
-    	printf("Issuer Logon %s\n", reqData);
-    	y_log_message(Y_LOG_LEVEL_DEBUG, "callback_issuer_logon %s", reqData);
-
-    	pUser pIssuer;// = malloc(sizeof(User));
-    	json_to_user(reqData, pIssuer);
-
-    	char *response_value = msprintf(HEADER_PREFIX_BEARER " <%s>", pIssuer->password);
-
-    	u_map_put(response->map_header, HEADER_RESPONSE, response_value);
-    	o_free(response_value);
-
-    	char *body;
-
-    	pUser pGetIssuer = (pUser)malloc(sizeof(pUser)); 
-		GetIssuer(pIssuer->id, pGetIssuer);
-    	if(pGetIssuer==NULL)
-    	{
-        	AddIssuer(pIssuer);
-        	//ulfius_add_cookie_to_response(response, "GameOn", lang, NULL, 0, NULL, NULL, 0, 0);
-
-        	body = msprintf("Passport User succesfully Created for User : %s!", reqData);
-    	}
-    	else
-        	body = msprintf("Passport creation failed, try a different id + usr combo %s.", pGetIssuer->name);
-
-    	ulfius_set_string_body_response(response, 200, body);
-
-    	free(pIssuer);
-    	free(pGetIssuer);
-		free(body);
-    	//u_map_put(response->map_header, "newusr", "1234");
-
-        return U_CALLBACK_CONTINUE;
-    }
-
-/**
- * Callback function for creating a user login (username/password)
- */
-    int callback_create_issuer_account(const struct _u_request * request, struct _u_response * response, void * user_data) {
+    int callback_client_account(const struct _u_request * request, struct _u_response * response, void * user_data) {
 
         return U_CALLBACK_CONTINUE;
     }  
-    
-/**
- * Callback function for creating a user login (username/password)
- */
-	int callback_get_passport(const struct _u_request * request, struct _u_response * response, void * user_data) {
 
-		return U_CALLBACK_CONTINUE;
-	}
+/**
+ * Callback function for a client logon
+ */
+	int callback_client_logon(const struct _u_request * request, struct _u_response * response, void * user_data) {
+
+		y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_logon");
+		if (request->auth_basic_user != NULL && request->auth_basic_password != NULL)
+		{
+			pUser pUsr = (pUser)malloc(sizeof(User));
+			if( GetUserByName(request->auth_basic_user, pUsr) == 0)
+			{
+				int cmpusr = o_strcmp(request->auth_basic_user, pUsr->name);
+
+				int cmppwd = o_strcmp(request->auth_basic_password, pUsr->password);
+				char usrjson[512];
+				user_to_json(pUsr, usrjson);
+				//Add a token to the db associarted to this user
+				char *token = CreateJWT( usrjson, pUsr->password);
+				char *response_value = msprintf(CRYPTRESERVE_USER ":%s", token);
+        
+    			u_map_put(response->map_header, HEADER_RESPONSE, response_value);    
+				o_free(response_value);
+		
+				y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_logon Successfull Logon: %s!", pUsr->name);
+				
+				return U_CALLBACK_CONTINUE;
+			}
+		}
+	return 0;
+}
+
 
 #ifndef U_DISABLE_GNUTLS
 /**
@@ -405,9 +377,9 @@ int StartRestServer(int argc, char **argv) {
     
   	printf("Start  Node!\n");
   
-  	y_init_logs("auth_server", Y_LOG_MODE_CONSOLE, Y_LOG_LEVEL_DEBUG, NULL, "**************************");
-  	y_init_logs("auth_server", Y_LOG_MODE_CONSOLE, Y_LOG_LEVEL_DEBUG, NULL, "Start GameOn Passport Node");
-  	y_init_logs("auth_server", Y_LOG_MODE_CONSOLE, Y_LOG_LEVEL_DEBUG, NULL, "**************************");
+  	y_init_logs("auth_server", Y_LOG_MODE_CONSOLE, Y_LOG_LEVEL_DEBUG, NULL, "***************************");
+  	y_init_logs("auth_server", Y_LOG_MODE_CONSOLE, Y_LOG_LEVEL_DEBUG, NULL, "* Start CryptReserve Node *");
+  	y_init_logs("auth_server", Y_LOG_MODE_CONSOLE, Y_LOG_LEVEL_DEBUG, NULL, "***************************");
  
  	int retUlf = ulfius_init_instance(&instance, PORT, NULL, "auth_basic_default");
 
@@ -427,13 +399,11 @@ int StartRestServer(int argc, char **argv) {
 //ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createuser", 0, &callback_create_user, NULL);
 	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createuserlogin", 0, &callback_create_user_login, NULL);
   	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/userlogon", 0, &callback_user_logon, NULL);
-  	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createpassport", 0, &callback_create_passport, NULL);
 
-	//Issuer API
-	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createissuerlogin", 0, &callback_create_issuer_login, NULL);
-  	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createissuer", 0, &callback_issuer_logon, NULL);
-	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createissueraccount", 0, &callback_create_issuer_account, NULL);
-  	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/getpassport", 0, &callback_get_passport, NULL);
+	//Client API
+//	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createclientlogin", 0, &callback_create_client_login, NULL);
+ // 	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createclient", 0, &callback_client_logon, NULL);
+	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createclientaccount", 0, &callback_create_client_account, NULL);
   	
 	//u_map_init();
 

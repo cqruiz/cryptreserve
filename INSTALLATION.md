@@ -1,7 +1,8 @@
-# [CryptReserveNode](https://cryptreservellc.atlassian.net/wiki/spaces/BL/pages/33122/CryptReserveNode)
-CryptReserveNode is the server hosting IPFS and the Blockchain.  Will expose a Wallet API.  This will eventually wind up on a docker image for ease of deploys.
+# [CryptReserveNode]
+CryptReserveNode is the server hosting IPFS and the Blockchain.
 
-## CryptReserve Passport System Setup and Installation
+## CryptReserve Decentralozed Application and File Management System 
+## Setup and Installation
 
 ### Setup AWS
 

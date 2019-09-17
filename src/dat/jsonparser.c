@@ -1,5 +1,7 @@
 #include "../../include/jsonparser.h"
 #include <string.h>
+#include <stdio.h>
+
 /*
 const char *to_json_string(json_object *obj, int flags)
 {
@@ -41,7 +43,7 @@ int json_to_user(char *Json, pUser pusr)
 
 	//parsed_json = json_tokener_parse(buf);
 
-	json_object_object_get_ex(jobj, "name", &name);
+	json_object_object_get_ex(jobj, "user", &name);
 	json_object_object_get_ex(jobj, "id", &id);
 	json_object_object_get_ex(jobj, "password", &password);
 	json_object_object_get_ex(jobj, "email", &email);
