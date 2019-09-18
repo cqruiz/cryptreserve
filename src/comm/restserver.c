@@ -31,6 +31,8 @@
 
 #include "../../include/restserver.h"
 #include "../../include/jwthelper.h"
+#include <stdio.h>
+#include <string.h>
 
 #define PORT 2884
 #define PREFIX "/auth"
@@ -163,6 +165,8 @@ int callback_create_user_login (const struct _u_request * request, struct _u_res
 		if (request->auth_basic_user != NULL && request->auth_basic_password != NULL)
 		{
 			pUser pUsr = (pUser)malloc(sizeof(User));
+			pUsr->email =  malloc(1);
+			sprintf(pUsr->email,"%s","");
 			if( GetUserByName(request->auth_basic_user, pUsr) == 0)
 			{
 				int cmpusr = o_strcmp(request->auth_basic_user, pUsr->name);

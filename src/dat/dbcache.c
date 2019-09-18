@@ -278,6 +278,7 @@ int getDataByName(char *name, char *tableName, pUser pUsrOut)
 		pUsrOut->id = sqlite3_column_int(res, 0);
 		const char *value = (const char*) sqlite3_column_text(res, 1);
 		if(value != NULL) {
+			pUsrOut->name = (char *)malloc(strlen(value)+1);
 			strcpy(pUsrOut->name, value); 
 		}
 		

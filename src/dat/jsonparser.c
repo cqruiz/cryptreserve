@@ -82,7 +82,9 @@ int user_to_json(pUser pUsr, const char *json)
   	json_object *jpassword = json_object_new_string(pUsr->password);
 
   	/*Creating a json string*/
-  	json_object *jemail = json_object_new_string(pUsr->email);
+  	json_object *jemail;
+	if (pUsr->email)
+		jemail = json_object_new_string(pUsr->email);
 
   	/*Form the json object*/
   	/*Each of these is like a key value pair*/
