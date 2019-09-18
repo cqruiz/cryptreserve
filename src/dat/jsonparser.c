@@ -55,14 +55,15 @@ int json_to_user(char *Json, pUser pusr)
 
 	pusr->password=(char *)malloc((strlen(json_object_get_string(password))+1) * sizeof(char));
 	strcpy(pusr->password, json_object_get_string(password));
-	
+
+	if (email!=0){	
 	pusr->email=(char *)malloc((strlen(json_object_get_string(email))+1) * sizeof(char));
 	strcpy(pusr->email, json_object_get_string(email));
-	
+	}
 	printf("Name: %s\n", pusr->name);
 	printf("Id: %d\n", pusr->id);
 	printf("Password: %s\n", pusr->password);
-	printf("Email: %s\n", pusr->email);
+	if (email!=0) printf("Email: %s\n", pusr->email);
 
 	return 0;
 }

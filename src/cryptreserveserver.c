@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../include/restserver.h"
+#include "../inckude/curlipfsclient.h"
 #include <unistd.h> //sleep
 #include <pthread.h>
 
@@ -12,6 +13,7 @@ void CurlIPFSClient(void *args )
 	printf("Starting Crypt Reserve Curl IPFS Client Interface.");
     	char *arrArgs[] = {"localhost","5001","peers","GET","/api/v0/bitswap/stat"};
 	//StartRestServer(1,arrArgs);
+	Init();
 	printf("Stopped Curl Server.");
 }
 

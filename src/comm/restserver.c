@@ -42,57 +42,30 @@
 #define PASSWORD "testpassword"
 
 char * read_file(const char * filename) {
-  char * buffer = NULL;
-  long length;
-  FILE * f = fopen (filename, "rb");
-  if (f != NULL) {
-    fseek (f, 0, SEEK_END);
-    length = ftell (f);
-    fseek (f, 0, SEEK_SET);
-    buffer = o_malloc (length + 1);
-    if (buffer != NULL) {
-      fread (buffer, 1, length, f);
-      buffer[length] = '\0';
-    }
-    fclose (f);
-  }
-  return buffer;
-}
-
-/**
- * Auth function for basic authentication
- */
-int callback_auth_basic_body (const struct _u_request * request, struct _u_response * response, void * user_data) {
-  y_log_message(Y_LOG_LEVEL_DEBUG, APP_NAME " basic auth user: %s", request->auth_basic_user);
-  y_log_message(Y_LOG_LEVEL_DEBUG, APP_NAME " basic auth password: %s", request->auth_basic_password);
-  y_log_message(Y_LOG_LEVEL_DEBUG, APP_NAME " basic auth param: %s", (char *)user_data);
-  
-  if (request->auth_basic_user != NULL && request->auth_basic_password != NULL && 
-      0 == o_strcmp(request->auth_basic_user, USER) && 0 == o_strcmp(request->auth_basic_password, PASSWORD)) {
-
-    return U_CALLBACK_CONTINUE;
-  } else {
-    ulfius_set_string_body_response(response, 401, "Error authentication");
-    return U_CALLBACK_UNAUTHORIZED;
-  }
-}
-
-/**
- * Callback function for basic authentication
- */
-int callback_auth_basic (const struct _u_request * request, struct _u_response * response, void * user_data) {
-	y_log_message(Y_LOG_LEVEL_DEBUG, "callback_auth_basic");
-  ulfius_set_string_body_response(response, 200, "Basic auth callback");
-  return U_CALLBACK_CONTINUE;
+	char * buffer = NULL;
+	long length;
+	FILE * f = fopen (filename, "rb");
+	if (f != NULL) {
+		fseek (f, 0, SEEK_END);
+		length = ftell (f);
+		fseek (f, 0, SEEK_SET);
+		buffer = o_malloc (length + 1);
+		if (buffer != NULL) {
+			fread (buffer, 1, length, f);
+			buffer[length] = '\0';
+		}
+		fclose (f);
+	}
+	return buffer;
 }
 
 //User API
 
 /**
- * Callback function for creating a user login (username/password)
+ * Callback function for creating a user account (username/password)
  */
-int callback_create_user_login (const struct _u_request * request, struct _u_response * response, void * user_data) {
-	y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_create_user");
+int callback_create_user_account (const struct _u_request * request, struct _u_response * response, void * user_data) {
+	y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_create_user_account");
 
 	// Create a wallet address from a managed ethereum node
 	// create a smart contract for managing this users session token and documents.
@@ -101,7 +74,7 @@ int callback_create_user_login (const struct _u_request * request, struct _u_res
 	strcpy(reqData, (char *)request->binary_body);
 
 	printf("Creating user %s Len:%d\n", reqData, strlen(reqData));
-	y_log_message(Y_LOG_LEVEL_DEBUG, "cRestServerAPI::allback_create_user %s", reqData);
+	y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_create_user_account %s", reqData);
 
 	pUser pusr = malloc(sizeof(User));
 	if ( json_to_user(reqData, pusr) ==0)
@@ -159,9 +132,9 @@ int callback_create_user_login (const struct _u_request * request, struct _u_res
 /**
  * Callback function for creating a user login (username/password)
  */
-	int callback_user_logon(const struct _u_request * request, struct _u_response * response, void * user_data) {
+	int callback_user_login(const struct _u_request * request, struct _u_response * response, void * user_data) {
 
-		y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_logon");
+		y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_login");
 		if (request->auth_basic_user != NULL && request->auth_basic_password != NULL)
 		{
 			pUser pUsr = (pUser)malloc(sizeof(User));
@@ -262,14 +235,6 @@ int callback_create_user_login (const struct _u_request * request, struct _u_res
     	//u_map_put(response->map_header, "newusr", "1234");
     	return U_CALLBACK_CONTINUE;
     }  
-	
-/**
- * Callback function for creating a client account
- */
-    int callback_client_account(const struct _u_request * request, struct _u_response * response, void * user_data) {
-
-        return U_CALLBACK_CONTINUE;
-    }  
 
 /**
  * Callback function for a client logon
@@ -340,7 +305,7 @@ void createsecretapi(char *cid, struct _u_response * response)
 	// Initialize the instance
   	struct _u_instance instance;
 
-  	printf("Generate GameOn callback API!\n");
+  	printf("Generate CryptReserve  callback API!\n");
 
   	y_init_logs("auth_server", Y_LOG_MODE_CONSOLE, Y_LOG_LEVEL_DEBUG, NULL, "logs start");
 
@@ -352,7 +317,7 @@ void createsecretapi(char *cid, struct _u_response * response)
 
 	//generate token;
 	char Tok[1024];
-	sprintf(Tok, "GameOn_%s", cid);
+	sprintf(Tok, "CryptReserve_%s", cid);
 
 	// OAuth2 Glewd Structure
   	struct _gameon_resource_config g_config;
@@ -370,7 +335,7 @@ void createsecretapi(char *cid, struct _u_response * response)
 	u_map_put(response->map_header, BODY_URL_CALLBACK, secretresource);
 
 	// OAuth2 authentication callback callback_check_gameon_access_token for the endpoint GET "/api/resource/*"
-	ulfius_add_endpoint_by_val(&instance, "GET", PSSPRTAPI, secretresource, 0, &callback_check_gameon_access_token, (void *)&g_config);
+	//ulfius_add_endpoint_by_val(&instance, "GET", PSSPRTAPI, secretresource, 0, &callback_check_cryptreserve_token, (void *)&g_config);
 }
 
 #endif
@@ -389,25 +354,17 @@ int StartRestServer(int argc, char **argv) {
 
   	//if (ulfius_init_instance(&instance, PORT, NULL, "auth_basic_default") != U_OK) {
 	if (retUlf != U_OK) {
-    	printf("Error GameOn ulfius_init_instance, abort\n");
-    	return(1);
+    		printf("Error CryptReserve ulfius_init_instance, abort\n");
+    		return(1);
   	}
   
-  	// Endpoint list declaration
-  	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/basic", 1, &callback_auth_basic_body, "auth param");
-  	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/basic", 2, &callback_auth_basic, NULL);
-  	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/default", 1, &callback_auth_basic, NULL);
-  	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/default", 0, &callback_auth_basic_body, NULL);
-
 	//User API
-//ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createuser", 0, &callback_create_user, NULL);
-	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createuserlogin", 0, &callback_create_user_login, NULL);
-  	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/userlogon", 0, &callback_user_logon, NULL);
+	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createuseraccount", 0, &callback_create_user_account, NULL);
+  	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/userlogin", 0, &callback_user_login, NULL);
 
 	//Client API
-//	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createclientlogin", 0, &callback_create_client_login, NULL);
- // 	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createclient", 0, &callback_client_logon, NULL);
 	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createclientaccount", 0, &callback_create_client_account, NULL);
+  	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/clientlogin", 0, &callback_user_login, NULL);
   	
 	//u_map_init();
 
