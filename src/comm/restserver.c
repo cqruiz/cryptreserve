@@ -221,7 +221,7 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
     	if(pGetUser==NULL)
     	{
         	AddUser(pusr);
-        	//ulfius_add_cookie_to_response(response, "GameOn", lang, NULL, 0, NULL, NULL, 0, 0);
+        	//ulfius_add_cookie_to_response(response, "CryptReserve", lang, NULL, 0, NULL, NULL, 0, 0);
 
         	body = msprintf("Passport User succesfully Created for User : %s!", reqData);
     	}
@@ -379,7 +379,7 @@ int StartRestServer(int argc, char **argv) {
   	if (argc > 3) {
     	char * server_key = read_file(argv[1]), * server_pem = read_file(argv[2]), * root_ca_pem = read_file(argv[3]);
     	if (ulfius_start_secure_ca_trust_framework(&instance, server_key, server_pem, root_ca_pem) == U_OK) {
-      		printf("Start secure GameOn Passport Node on port %u\n", instance.port);
+      		printf("Start secure CryptReserve Node on port %u\n", instance.port);
     
       		// Wait for the user to press <enter> on the console to quit the application
       		printf("Press <enter> to quit server\n");
