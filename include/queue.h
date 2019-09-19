@@ -20,6 +20,7 @@ struct test_data
 typedef struct {
     int number;
     char name[256];
+    char addr[256];
     char CID[256];
 } DATA;
 

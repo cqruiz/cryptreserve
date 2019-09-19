@@ -13,7 +13,7 @@
 #define EMAIL_COL_NAME "Password"
 #define TOK_COL_NAME "Token"
 #define USER_TABLE_NAME "users"
-#define ISSUER_TABLE_NAME "issuers"
+#define CLIENT_TABLE_NAME "clients"
 #define TOKEN_TABLE_NAME "tokens"
 
 struct User{
@@ -26,8 +26,20 @@ struct User{
 typedef struct User* pUser;
 typedef struct User User;
 
+struct Client{
+	char *name;
+	int id;
+	char *password;
+	char *email;
+};
+ 
+typedef struct Client* pClient;
+
 int AddUser(pUser args);
 int GetUser(int, pUser);
 int GetUserByName(char *, pUser);
+int AddClient(pClient args);
+int GetClient(int, pClient);
+int GetClientByName(char *, pClient);
 #endif
 

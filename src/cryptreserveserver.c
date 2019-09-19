@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../include/restserver.h"
-#include "../inckude/curlipfsclient.h"
+#include "../include/curlipfsclient.h"
 #include <unistd.h> //sleep
 #include <pthread.h>
 

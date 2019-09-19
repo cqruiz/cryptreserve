@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdio.h>
 #include <curl/curl.h>
-#include "../../include/queue.h"
+#include "queue.h"
 #include <unistd.h>
 
 struct MemoryStruct {

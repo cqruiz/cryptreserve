@@ -14,9 +14,9 @@ int AddUser(pUser args)
 	return insertDB(args, USER_TABLE_NAME);
 }
 
-int AddIssuer(pUser issuerArgs)
+int AddClient(pClient clientArgs)
 {
-	return insertDB(issuerArgs, ISSUER_TABLE_NAME);
+	return insertDB(clientArgs, CLIENT_TABLE_NAME);
 }
 char *AddToken(pUsr)
 {
@@ -30,9 +30,13 @@ int GetUserByName(char *name, pUser out)
 {
 	return getDataByName(name, USER_TABLE_NAME, out);
 }
-int GetIssuer(int id, pUser out)
+int GetClientByName(char *name, pClient out)
 {
-	return getData(id, ISSUER_TABLE_NAME, out);
+	return getDataByName(name, CLIENT_TABLE_NAME, out);
+}
+int GetClient(int id, pClient out)
+{
+	return getData(id, CLIENT_TABLE_NAME, out);
 }
 
 void initDB()
@@ -89,17 +93,17 @@ void initDB()
     printf("The last Id of the inserted user row is %d\n", last_id);
 
 	//Issuer Table
-	sprintf(sql, "CREATE TABLE " ISSUER_TABLE_NAME " (" ID_COL_NAME " INTEGER PRIMARY KEY, " NAME_COL_NAME " TEXT, " PWD_COL_NAME " TEXT, " EMAIL_COL_NAME " TEXT); INSERT INTO " ISSUER_TABLE_NAME " ( " ID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES (1,'MGM','1234','MGM@mailinator.com');");
+	sprintf(sql, "CREATE TABLE " CLIENT_TABLE_NAME " (" ID_COL_NAME " INTEGER PRIMARY KEY, " NAME_COL_NAME " TEXT, " PWD_COL_NAME " TEXT, " EMAIL_COL_NAME " TEXT); INSERT INTO " CLIENT_TABLE_NAME " ( " ID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES (1,'MGM','1234','MGM@mailinator.com');");
     
     rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
     
     if (rc != SQLITE_OK ) {
         
-    	fprintf(stderr, "Failed to create table " ISSUER_TABLE_NAME "\n");
+    	fprintf(stderr, "Failed to create table " CLIENT_TABLE_NAME "\n");
        	fprintf(stderr, "SQL error: %s\n", err_msg);
         sqlite3_free(err_msg);
     } else {
-        fprintf(stdout, "Table " ISSUER_TABLE_NAME " issuers created successfully\n");
+        fprintf(stdout, "Table " CLIENT_TABLE_NAME " issuers created successfully\n");
     }
     
     last_id = sqlite3_last_insert_rowid(db);
