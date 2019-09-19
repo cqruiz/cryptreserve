@@ -83,3 +83,8 @@ void ProcessRequest(void *argv)
 
 	fclose(fp);
 }
+
+void SendIPFSData(DATA *data)
+{
+	
+}

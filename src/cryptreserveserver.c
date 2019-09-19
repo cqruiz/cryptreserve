@@ -13,7 +13,7 @@ void CurlIPFSClient(void *args )
 	printf("Starting Crypt Reserve Curl IPFS Client Interface.");
     	char *arrArgs[] = {"localhost","5001","peers","GET","/api/v0/bitswap/stat"};
 	//StartRestServer(1,arrArgs);
-	Init();
+//	Init();
 	printf("Stopped Curl Server.");
 }
 
