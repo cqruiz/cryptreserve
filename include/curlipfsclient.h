@@ -11,8 +11,13 @@ struct MemoryStruct {
   char *memory;
   size_t size;
 };
+struct CurlThreadData{
+  Queue* queue;
+  bool running;
+  
+};
 
-int init(char** argv);
+int StartCurlServer(Queue *);
 void ProcessRequest(void *argv);
 static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp);
 

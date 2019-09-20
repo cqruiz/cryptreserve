@@ -30,12 +30,12 @@ int test_queue()
 
 
 Queue *ConstructQueue(int limit) {
-    Queue *queue = (Queue*) malloc(sizeof (Queue));
-    if (queue == NULL) {
-        return NULL;
-    }
     if (limit <= 0) {
         limit = 65535;
+    }
+    Queue *queue = (Queue*) malloc(sizeof(Queue)*limit);
+    if (queue == NULL) {
+        return NULL;
     }
     queue->limit = limit;
     queue->size = 0;

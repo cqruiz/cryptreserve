@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
+
 //#include "liblfds710.h"
 
 #define TRUE  1
@@ -16,9 +18,13 @@ struct test_data
     name[64];
 };
 
+enum eCmd
+{addfile,getfile};
+
 /* a link in the queue, holds the info and point to the next Node*/
 typedef struct {
     int number;
+    enum eCmd cmd;
     char name[256];
     char addr[256];
     char CID[256];
@@ -35,6 +41,7 @@ typedef struct Queue {
     NODE *tail;
     int size;
     int limit;
+    bool running;
 } Queue;
 
 Queue *ConstructQueue(int limit);
