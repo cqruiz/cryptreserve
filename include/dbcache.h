@@ -41,5 +41,7 @@ int GetUserByName(char *, pUser);
 int AddClient(pClient args);
 int GetClient(int, pClient);
 int GetClientByName(char *, pClient);
+void initDB();
+
 #endif
 

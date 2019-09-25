@@ -18,13 +18,13 @@ struct test_data
     name[64];
 };
 
-enum eCmd
-{addfile,getfile};
+typedef enum eCmd
+{addfile,getfile,uploadfile} Cmd;
 
 /* a link in the queue, holds the info and point to the next Node*/
 typedef struct {
     int number;
-    enum eCmd cmd;
+    Cmd cmd;
     char name[256];
     char addr[256];
     char CID[256];

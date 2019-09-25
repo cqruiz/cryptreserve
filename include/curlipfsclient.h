@@ -11,14 +11,22 @@ struct MemoryStruct {
   char *memory;
   size_t size;
 };
-struct CurlThreadData{
+
+typedef struct {
   Queue* queue;
   bool running;
-  
-};
+  int port;
+  char* path;
+  char* url;
+  char* protocol;
 
-int StartCurlServer(Queue *);
-void ProcessRequest(void *argv);
-static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp);
+} CurlThreadData;
+
+//typedef CurlThreadData curlData;
+
+int StartCurlServer(CurlThreadData *);
+void ProcessRequest( void *);
+//static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp);
+void read_callback();
 
 #endif
