@@ -104,11 +104,11 @@ void SendIPFSData(DATA *data)
     		curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 
 		/* set where to read from (on Windows you need to use READFUNCTION too) */ 
-    		curl_easy_setopt(curl, CURLOPT_READDATA, fd);
+    //		curl_easy_setopt(curl, CURLOPT_READDATA, fd);
 
     		/* and give the size of the upload (optional) */ 
-    		curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE,
-                     		 (curl_off_t)file_info.st_size);
+    //		curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE,
+       //              		 (curl_off_t)file_info.st_size);
 
 		break;
 	case uploadfile:
@@ -122,23 +122,23 @@ void SendIPFSData(DATA *data)
   		curl_easy_setopt(curl, CURLOPT_URL, "ftp://example.com/dir/to/newfile");
  
   		/* now specify which pointer to pass to our callback */
-  		curl_easy_setopt(curl, CURLOPT_READDATA, hd_src);
+//  		curl_easy_setopt(curl, CURLOPT_READDATA, hd_src);
  
   		/* Set the size of the file to upload */
-  		curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)fsize);
+//  		curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)fsize);
  		break;
 
 	case getfile:
-     curl_easy_setop(curl, CURLOPT_URL, argv[1]);
+     		curl_easy_setop(curl, CURLOPT_URL, data->name);
 		break;
 	default:
 		break;
      }
 
-     curl_easy_setup(curl, CURLOPT_WRITEDATA, fp);
+     //curl_easy_setup(curl, CURLOPT_WRITEDATA, data->name);
      curl_easy_setup(curl, CURLOPT_FAILONERROR, 1L);
      result =  curl_easy_perform(curl);
-     if (result  == CIRLM_OK)
+     if (result  == CURLE_OK)
 	printf("Download Successful!/n");
      else
         printf("ERROR: %ls\n", &result);
@@ -162,11 +162,11 @@ void GetIPFSData(DATA *data)
 
      curl = curl_easy_init();
 
-     curl_easy_setop(curl, CURLOPT_URL, argv[1]);
-     curl_easy_setup(curl, CURLOPT_WRITEDATA, fp);
+     curl_easy_setop(curl, CURLOPT_URL, data->addr);
+     //curl_easy_setup(curl, CURLOPT_WRITEDATA, fp);
      curl_easy_setup(curl, CURLOPT_FAILONERROR, 1L);
      result =  curl_easy_perform(curl);
-     if (result  == CIRLM_OK)
+     if (result  == CURLE_OK)
 	printf("Download Successful!/n");
      else
         printf("ERROR: %ls\n", &result);

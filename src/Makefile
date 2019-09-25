@@ -5,7 +5,7 @@ ULFIUS_LOC=../tools/ulfius/src
 GLEWYWLYD_LOC=../tools/glewlwyd/src
 INCLUDE=/usr/local/include
 CFLAGS+=-c -g -Wall -L$(INCLUDE) $(EXAMPLE_INCLUDE)  $(ADDITIONALFLAGS) $(CPPFLAGS) $(GLEWLWYD_LOC) $(ULFIUS_LOC) -D_REENTRANT
-LIBS=-lc -lgnutls -lulfius -lorcania -ljwt -ljansson -lcrypto -lsqlite3 -std=c99 -ljson-c  -lyder  
+LIBS=-lc -lgnutls -lcurl -lulfius -lorcania -ljwt -ljansson -lcrypto -lsqlite3 -std=c99 -ljson-c  -lyder 
 
 #-L$(ULFIUS_LOCATION)
 
@@ -18,7 +18,8 @@ LDIR=lib
 LDFLAGS+=-pthread
 SOURCES=cryptreserveserver.c comm/restserver.c lib/queue.c dat/dbcache.c dat/jsonparser.c comm/cryptreservesecureapi.c encr/jwthelper.c comm/curlipfsclient.c comm/websocket.c
 OBJ=$(SOURCES:.c=.o)
-OBJECTS= restserver.o queue.o cryptreserveserver.o dbcache.o jsonparser.o cryptreservesecureapi.o jwthelper.o curlipfsclient.oawebserver.o
+OBJECTS= restserver.o queue.o cryptreserveserver.o dbcache.o jsonparser.o cryptreservesecureapi.o jwthelper.o curlipfsclient.o 
+# webserver.o
 OBJS = $(patsubst %,$(ODIR)/%,$(OBJECTS))
 EXE=../bin/CryptReserve
 
