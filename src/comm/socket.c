@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <pthread.h>
 
 #define PORT    5555
 #define MAXMSG  512
@@ -35,7 +36,7 @@ read_from_client (int filedes)
 }
 
 int
-ListenSocket()
+ListenSocket(void* args)
 {
   extern int make_socket (uint16_t port);
   int sock;
@@ -105,3 +106,19 @@ ListenSocket()
     }
 }
 
+int StartSocketServer()
+{
+	pthread_t processRequestThread;
+        
+	/* create a Request Listener thread */
+        if(pthread_create(&processRequestThread, NULL, ListenSocket, NULL)) {\
+                fprintf(stderr, "Error creating Listen Socket\n");
+                return 1;
+        }
+        printf("Running Porcess Curl Request Listener Thread\n");
+
+        
+        pthread_join(processRequestThread, NULL);
+
+	return 0;
+}

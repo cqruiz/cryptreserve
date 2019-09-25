@@ -37,6 +37,8 @@
 #define PORT 2884
 #define PREFIX "/auth"
 #define PSSPRTAPI "/api"
+#define DISCOVER "/discovery"
+#define ACCESS_CTRL_MAX_AGE 1800
 
 #define USER "test"
 #define PASSWORD "testpassword"
@@ -268,6 +270,28 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 }
 
 
+/* OPTIONS callback */
+int callback_options (const struct _u_request * request, struct _u_response * response, void * user_data) 
+{
+  
+  void(request);
+  
+  void(user_data);
+  
+  //Access-Control-Allow-Methods
+  u_map_put(response->map_header, "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  
+  //Access-Control-Allow-Headers
+  u_map_put(response->map_header, "Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Bearer, Authorization");
+  
+  //Access-Control-Max-Age
+  // This value should be configurable, client should send this value as part of user configuration screen api
+  u_map_put(response->map_header, "Access-Control-Max-Age", ACCESS_CTRL_MAX_AGE);
+  
+  return U_CALLBACK_COMPLETE;
+}
+
+
 #ifndef U_DISABLE_GNUTLS
 /**
  * Callback function on client certificate authentication
@@ -366,6 +390,12 @@ int StartRestServer(int argc, char **argv) {
 	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createclientaccount", 0, &callback_create_client_account, NULL);
   	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/clientlogin", 0, &callback_user_login, NULL);
   	
+	//Create New Endpoint:
+	/*
+	  OPTIONS
+	*/
+	ulfius_add_endpoint_by_val(&instance, "OPTIONS", DISCOVER, "*", 0, &callback_options, NULL);
+
 	//u_map_init();
 
 #ifndef U_DISABLE_GNUTLS

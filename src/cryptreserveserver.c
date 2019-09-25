@@ -11,8 +11,10 @@ void jsontest();
 void CurlIPFSClient(void *args )
 {
 	printf("Starting Crypt Reserve Curl IPFS Client Interface.");
-	Queue *pQueue;
-	StartCurlServer(pQueue);
+	//Queue *pQueue;
+	CurlThreadData* ctd = (CurlThreadData*)malloc(sizeof(CurlThreadData));
+	
+	StartCurlServer(ctd);
 	printf("Stopped Curl Server.");
 }
 
@@ -36,11 +38,10 @@ int main(int argc, const char* argv[] )
     pthread_t curlIPFSClient;;
     pthread_t restAPIServer;
 
-//    Queue *pQ =  ConstructQueue(100);
+    Queue *pQ =  ConstructQueue(100);
 
  //   / create a Message Processor thread /
     if(pthread_create(&curlIPFSClient, NULL, CurlIPFSClient, NULL)) {
-
 	    fprintf(stderr, "Error creating Curl IPFS CLient thread\n");
 	    return 1;
     }

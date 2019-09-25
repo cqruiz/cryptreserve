@@ -49,6 +49,7 @@ void DestructQueue(Queue *queue) {
     NODE *pN;
     while (!isEmpty(queue)) {
         pN = Dequeue(queue);
+	// free members as well
         free(pN);
     }
     free(queue);
