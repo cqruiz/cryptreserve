@@ -33,12 +33,14 @@
 #include "../../include/jwthelper.h"
 #include <stdio.h>
 #include <string.h>
+//#include "../../include/jsonparser.h"
 
 #define PORT 2884
 #define PREFIX "/auth"
 #define PSSPRTAPI "/api"
 #define DISCOVER "/discovery"
 #define ACCESS_CTRL_MAX_AGE 1800
+#define FILE_PREFIX "/upload"
 
 #define USER "test"
 #define PASSWORD "testpassword"
@@ -147,18 +149,25 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 				int cmpusr = o_strcmp(request->auth_basic_user, pUsr->name);
 
 				int cmppwd = o_strcmp(request->auth_basic_password, pUsr->password);
-				char usrjson[512];
-				user_to_json(pUsr, usrjson);
-				//Add a token to the db associarted to this user
-				char *token = CreateJWT( usrjson, pUsr->password);
-				char *response_value = msprintf(CRYPTRESERVE_USER ":%s", token);
+				if (cmpusr!=0)
+					y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_logini Incorrect Username/Password.");
+				else if (cmppwd!=0)
+					y_log_messsage(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_login Incorrect Username/Passsword.");
+				else
+				{
+					char usrjson[512];
+					user_to_json(pUsr, usrjson);
+					//Add a token to the db associarted to this user
+					char *token = CreateJWT( usrjson, pUsr->password);
+					char *response_value = msprintf(CRYPTRESERVE_USER ":%s", token);
         
-    			u_map_put(response->map_header, HEADER_RESPONSE, response_value);    
-				o_free(response_value);
+    					u_map_put(response->map_header, HEADER_RESPONSE, response_value);    
+					o_free(response_value);
 		
-				y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_logon Successfull Logon: %s!", pUsr->name);
+					y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_logon Successfull Logon: %s!", pUsr->name);
 				
-				return U_CALLBACK_CONTINUE;
+					return U_CALLBACK_CONTINUE;
+				}
 			}
 		}
 
@@ -274,9 +283,9 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 int callback_options (const struct _u_request * request, struct _u_response * response, void * user_data) 
 {
   
-  void(request);
+  //void(request);
   
-  void(user_data);
+  //void(user_data);
   
   //Access-Control-Allow-Methods
   u_map_put(response->map_header, "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -291,6 +300,67 @@ int callback_options (const struct _u_request * request, struct _u_response * re
   return U_CALLBACK_COMPLETE;
 }
 
+
+/**
+ * upload a file
+ */
+int callback_upload_file (const struct _u_request * request, struct _u_response * response, void * user_data) {
+  char * url_params = print_map(request->map_url), * headers = print_map(request->map_header), * cookies = print_map(request->map_cookie), 
+        * post_params = print_map(request->map_post_body);
+
+  char * string_body = msprintf("Upload file\n\n  method is %s\n  url is %s\n\n  parameters from the url are \n%s\n\n  cookies are \n%s\n\n  headers are \n%s\n\n  post parameters are \n%s\n\n",
+                                  request->http_verb, request->http_url, url_params, cookies, headers, post_params);
+  ulfius_set_string_body_response(response, 200, string_body);
+  
+  //Send string_body to IPFS and return a CID
+  //response.CID == CID = AddToIPFS.Queue();
+
+  o_free(url_params);
+  o_free(headers);
+  o_free(cookies);
+  o_free(post_params);
+  o_free(string_body);
+  return U_CALLBACK_CONTINUE;
+}
+
+/**
+ * File upload callback function
+ */
+int file_upload_callback (const struct _u_request * request, 
+                          const char * key, 
+                          const char * filename, 
+                          const char * content_type, 
+                          const char * transfer_encoding, 
+                          const char * data, 
+                          uint64_t off, 
+                          size_t size, 
+                          void * cls) {
+  y_log_message(Y_LOG_LEVEL_DEBUG, "Got from file '%s' of the key '%s', offset %llu, size %zu, cls is '%s'", filename, key, off, size, cls);
+  return U_OK;
+}
+
+/**
+ * serve a static file to the client as a very simple http server
+ */
+int callback_static_file (const struct _u_request * request, struct _u_response * response, void * user_data) {
+  void * buffer = NULL;
+  long length;
+//  char  * file_path = msprintf("%s%s", STATIC_FOLDER, request->http_url);
+// Add CID IPFS Stream Pointer to buffer
+  const char * content_type;
+  
+
+    if (buffer) {
+      content_type = u_map_get((struct _u_map *)user_data, get_filename_ext(request->http_url));
+      response->binary_body = buffer;
+      response->binary_body_length = length;
+      u_map_put(response->map_header, "Content-Type", content_type);
+      response->status = 200;
+    } else {
+      response->status = 404;
+    }
+  return U_CALLBACK_CONTINUE;
+}
 
 #ifndef U_DISABLE_GNUTLS
 /**
@@ -396,6 +466,31 @@ int StartRestServer(int argc, char **argv) {
 	*/
 	ulfius_add_endpoint_by_val(&instance, "OPTIONS", DISCOVER, "*", 0, &callback_options, NULL);
 
+	//File Upload
+	// Max post param size is 16 Kb, which means an uploaded file is no more than 16 Kb
+  	instance.max_post_param_size = 16*1024;
+  
+  	if (ulfius_set_upload_file_callback_function(&instance, &file_upload_callback, "my cls") != U_OK) {
+    		y_log_message(Y_LOG_LEVEL_ERROR, "Error ulfius_set_upload_file_callback_function");
+  	}
+  
+  	// MIME types that will define the static files
+  	struct _u_map mime_types;
+  	u_map_init(&mime_types);
+  	u_map_put(&mime_types, ".html", "text/html");
+  	u_map_put(&mime_types, ".css", "text/css");
+  	u_map_put(&mime_types, ".js", "application/javascript");
+  	u_map_put(&mime_types, ".png", "image/png");
+  	u_map_put(&mime_types, ".jpeg", "image/jpeg");
+  	u_map_put(&mime_types, ".jpg", "image/jpeg");
+  	u_map_put(&mime_types, "*", "application/octet-stream");
+  
+  	// Endpoint list declaration
+  	// The first 3 are webservices with a specific url
+  	// The last endpoint will be called for every GET call and will serve the static files
+  	ulfius_add_endpoint_by_val(&instance, "*", FILE_PREFIX, NULL, 1, &callback_upload_file, NULL);
+  	ulfius_add_endpoint_by_val(&instance, "GET", "*", NULL, 1, &callback_static_file, &mime_types);
+
 	//u_map_init();
 
 #ifndef U_DISABLE_GNUTLS
@@ -433,6 +528,7 @@ int StartRestServer(int argc, char **argv) {
   	}
 #endif
 
+	u_map_clean(&mime_types);
   	printf("End framework\n");
   	ulfius_stop_framework(&instance);
   	ulfius_clean_instance(&instance);

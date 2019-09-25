@@ -4,6 +4,7 @@
 #include "../include/curlipfsclient.h"
 #include <unistd.h> //sleep
 #include <pthread.h>
+#include "../include/queue.h"
 
 void jsontest();
 
@@ -38,17 +39,17 @@ int main(int argc, const char* argv[] )
     pthread_t curlIPFSClient;;
     pthread_t restAPIServer;
 
-    Queue *pQ =  ConstructQueue(100);
+//    Queue *pQ =  ConstructQueue(100);
 
  //   / create a Message Processor thread /
-    if(pthread_create(&curlIPFSClient, NULL, CurlIPFSClient, NULL)) {
+    if(pthread_create(&curlIPFSClient, NULL, (void*)CurlIPFSClient, NULL)) {
 	    fprintf(stderr, "Error creating Curl IPFS CLient thread\n");
 	    return 1;
     }
     printf("Running Curl IPFS Client Thread\n");
 
     /* create a Request Listener thread */
-    if(pthread_create(&restAPIServer, NULL, RestAPIServer, NULL)) {
+    if(pthread_create(&restAPIServer, NULL, (void*)RestAPIServer, NULL)) {
 	    fprintf(stderr, "Error creating Request Listener thread\n");
 	    return 1;
     }
