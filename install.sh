@@ -358,7 +358,33 @@ if [ ! -d "libcbor" ]; then
 	fi
 fi
 
-#INstall Glewlwyd
+#Install Curl
+echo "*****************************"
+echo "Install Curl"
+echo "*****************************"
+
+if [ ! -d "curl" ]; then
+	echo "*****************************"
+	echo "Git clone curl."
+	echo "*****************************"
+	git clone https://github.com/curl/curl.git
+fi
+
+echo "*****************************"
+echo "curl Building..."
+echo "*****************************"
+
+cd curl/src
+./configure
+make
+make install
+cd ../..
+echo "*****************************"
+echo "Done Buidling curl."
+echo "*****************************"
+
+
+#Install Glewlwyd
 echo "*****************************"
 echo "Install Glewlwyd"
 echo "*****************************"
