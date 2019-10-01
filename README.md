@@ -16,6 +16,7 @@ Run install.sh (./install.sh)
 * LibOrcania-dev
 * Libjwt
 * Hoel
+* Yder - Logging library for C applications
 * glewlwyd
 * libgnutls28-dev
 * JWT
