@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <stdio.h>
-#include <curl/curl.h>
+//#include <curl/curl.h>
 #include "queue.h"
 #include <unistd.h>
 

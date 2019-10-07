@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../include/restserver.h"
-#include "../include/curlipfsclient.h"
+//#include "../include/curlipfsclient.h"
 #include <unistd.h> //sleep
 #include <pthread.h>
 #include "../include/queue.h"
@@ -13,9 +13,9 @@ void CurlIPFSClient(void *args )
 {
 	printf("Starting Crypt Reserve Curl IPFS Client Interface.");
 	//Queue *pQueue;
-	CurlThreadData* ctd = (CurlThreadData*)malloc(sizeof(CurlThreadData));
+//	CurlThreadData* ctd = (CurlThreadData*)malloc(sizeof(CurlThreadData));
 	
-	StartCurlServer(ctd);
+//	StartCurlServer(ctd);
 	printf("Stopped Curl Server.");
 }
 

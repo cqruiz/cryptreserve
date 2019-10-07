@@ -20,8 +20,8 @@
 /**
  * check if bearer token has some of the specified scope
  */
-int callback_check_gameon_access_token (const struct _u_request * request, struct _u_response * response, void * user_data) {
-  struct _gameon_resource_config * config = (struct _gameon_resource_config *)user_data;
+int callback_check_cryptreserve_access_token (const struct _u_request * request, struct _u_response * response, void * user_data) {
+  struct _cryptreserve_resource_config * config = (struct _cryptreserve_resource_config *)user_data;
   json_t * j_access_token = NULL, * j_res_scope;
   int res = U_CALLBACK_UNAUTHORIZED, res_validity;
   const char * token_value = NULL;
@@ -98,7 +98,7 @@ int callback_check_gameon_access_token (const struct _u_request * request, struc
  * Validates if an access_token grants has a valid scope
  * return the final scope list on success
  */
-json_t * access_token_check_scope(struct _gameon_resource_config * config, json_t * j_access_token) {
+json_t * access_token_check_scope(struct _cryptreserve_resource_config * config, json_t * j_access_token) {
   int i, scope_count_token, scope_count_expected;
   char ** scope_list_token, ** scope_list_expected;
   json_t * j_res = NULL, * j_scope_final_list = json_array();
@@ -139,7 +139,7 @@ json_t * access_token_check_scope(struct _gameon_resource_config * config, json_
  * - type: match "access_token"
  * - iat + expires_in < now
  */
-int access_token_check_validity(struct _gameon_resource_config * config, json_t * j_access_token) {
+int access_token_check_validity(struct _cryptreserve_resource_config * config, json_t * j_access_token) {
   time_t now;
   json_int_t expiration;
   int res;
@@ -168,7 +168,7 @@ int access_token_check_validity(struct _gameon_resource_config * config, json_t 
 /**
  * validates if the token value is a valid jwt and has a valid signature
  */
-json_t * access_token_check_signature(struct _gameon_resource_config * config, const char * token_value) {
+json_t * access_token_check_signature(struct _cryptreserve_resource_config * config, const char * token_value) {
   json_t * j_return, * j_grants;
   jwt_t * jwt = NULL;
   char  * grants;

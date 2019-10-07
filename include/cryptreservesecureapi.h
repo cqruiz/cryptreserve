@@ -30,7 +30,7 @@
 
 #define APP_NAME		"CryptReserve"
 
-struct _gameon_resource_config {
+struct _cryptreserve_resource_config {
   int       method;
   char *    oauth_scope;
   char *    jwt_decode_key;
@@ -40,9 +40,9 @@ struct _gameon_resource_config {
   int accept_client_token;
 };
 
-int callback_check_gameon_access_token (const struct _u_request * request, struct _u_response * response, void * user_data);
-json_t * access_token_check_signature(struct _gameon_resource_config * config, const char * token_value);
+int callback_check_cryptreserve_access_token (const struct _u_request * request, struct _u_response * response, void * user_data);
+json_t * access_token_check_signature(struct _cryptreserve_resource_config * config, const char * token_value);
 json_t * access_token_get_payload(const char * token_value);
-int access_token_check_validity(struct _gameon_resource_config * config, json_t * j_access_token);
-json_t * access_token_check_scope(struct _gameon_resource_config * config, json_t * j_access_token);
+int access_token_check_validity(struct _cryptreserve_resource_config * config, json_t * j_access_token);
+json_t * access_token_check_scope(struct _cryptreserve_resource_config * config, json_t * j_access_token);
 
