@@ -1,6 +1,7 @@
 #include "../../include/jsonparser.h"
 #include <string.h>
 #include <stdio.h>
+#include <jansson.h>
 
 /*
 const char *to_json_string(json_object *obj, int flags)
@@ -27,39 +28,64 @@ const char *to_json_string(json_object *obj, int flags)
 
 int json_to_user(char *Json, pUser pusr)
 {
-//	struct json_object *parsed_json;
-	struct json_object *name;
-	struct json_object *id;
-	struct json_object *password;
-	struct json_object *email;
-	struct json_object *jobj;
+	json_t *json;
+	json_error_t error;
 
-	//char buf[1024];
-	//sprintf(buf, "%s", Json);                                               
-    	printf("Input JSON : %s\n", Json);
-    	char const *val;
-    	jobj = json_tokener_parse(Json);
-	printf("Received JSON in String format : %s\n", json_object_to_json_string(jobj));
+	json = json_loads(Json, 0, NULL);
 
-	//parsed_json = json_tokener_parse(buf);
-
-	json_object_object_get_ex(jobj, "user", &name);
-	json_object_object_get_ex(jobj, "id", &id);
-	json_object_object_get_ex(jobj, "password", &password);
-	json_object_object_get_ex(jobj, "email", &email);
-
-	pusr->name=(char *)malloc((strlen(json_object_get_string(name)) + 1) * sizeof(char));
-	strcpy(pusr->name, json_object_get_string(name));
-
-	pusr->id = json_object_get_int(id);
-
-	pusr->password=(char *)malloc((strlen(json_object_get_string(password))+1) * sizeof(char));
-	strcpy(pusr->password, json_object_get_string(password));
-
-	if (email!=0){	
-	pusr->email=(char *)malloc((strlen(json_object_get_string(email))+1) * sizeof(char));
-	strcpy(pusr->email, json_object_get_string(email));
+//	json = json_load_file(*Json, JSON_DISABLE_EOF_CHECK, &error);
+	if (json == NULL)
+	{
+	  //LOG_PRINT(LOGLEVEL_ERROR, "Loading json string failed: %s - %s; pos=%u\n",
+	                             //error.text, error.source, error.position);
+	  //status = ERROR;
+	  //goto _exit;
+	  return 1;
 	}
+
+	//Name
+	json_t *name = NULL;
+	name = json_object_get(json, "user");
+	if (!name || !json_is_string(name))
+	{
+	  //status = ERROR;
+	  return 1;
+	}
+	pusr->name=(char *)malloc((strlen(json_object_get_string(name)) + 1) * sizeof(char));
+	strcpy(pusr->name, json_string_value(name));
+
+	//Password
+        json_t *password = NULL;
+        password = json_object_get(json, "password");
+        if (!password || !json_is_string(password))
+        {
+          //status = ERROR;
+          return 2;
+        }
+	pusr->password=(char *)malloc((strlen(json_object_get_string(password)) + 1) * sizeof(char));
+        strcpy(pusr->password, json_string_value(password));
+
+	// Email
+        json_t *email = NULL;
+        email = json_object_get(json, "id");
+        if (!email || !json_is_string(email))
+        {
+          //status = ERROR;
+          return 3;
+        }
+        strcpy(pusr->email, json_string_value(email));
+
+	// ID
+        json_t *id = 0;
+	id = json_object_get(json, "id");
+        if (!id || !json_is_string(id))
+        {
+          //status = ERROR;
+          return 4;
+        }
+        // id now equal to json_t object of type int.
+        pusr->id = json_int_value(id);
+
 	printf("Name: %s\n", pusr->name);
 	printf("Id: %d\n", pusr->id);
 	printf("Password: %s\n", pusr->password);
@@ -70,35 +96,41 @@ int json_to_user(char *Json, pUser pusr)
 
 int user_to_json(pUser pUsr, const char *json)
 {
- 	/*Creating a json object*/
-  	json_object * jobj = json_object_new_object();
-
-  	/*Creating a json string*/
-  	json_object *jname = json_object_new_string(pUsr->name);
-
-  	/*Creating a json integer*/
-  	json_object *jid = json_object_new_int(pUsr->id);
-
-  	/*Creating a json string*/
-  	json_object *jpassword = json_object_new_string(pUsr->password);
-
-  	/*Creating a json string*/
-  	json_object *jemail;
+	char *s = NULL;
+	json_t *root = json_object();
+  	json_t *json_arr = json_array();
+  
+	if (pUsr->name)
+  		json_object_set_new( root, "name", json_string( pUsr->name ) );
+	if (pUsr->password)
+  		json_object_set_new( root, "password", json_string( pUsr->password ) );
+  	json_object_set_new( root, "id", json_integer( pUsr->id ));
 	if (pUsr->email)
-		jemail = json_object_new_string(pUsr->email);
+  		json_object_set_new( root, "email", json_string( pUsr->email ));
 
-  	/*Form the json object*/
-  	/*Each of these is like a key value pair*/
-  	json_object_object_add(jobj,"User Name", jname);
-  	json_object_object_add(jobj,"Identifier", jid);
-  	json_object_object_add(jobj,"Password", jpassword);
-  	json_object_object_add(jobj,"Email", jemail);
-
-
-  	/*Now printing the json object*/
-  	printf ("The json object created: %sn",json_object_to_json_string(jobj));
-//	json = (char*)malloc(strlen(json_object_to_json_string(jobj)));
-	sprintf(json, json_object_to_json_string(jobj));
-
+  	s = json_dumps(root, NULL);
+  	puts(s);
+	json = malloc ( strlen(s)  +1);
+	sprintf(json, "%s", s);
 	return 0;
 }
+
+static void *secure_malloc(size_t size)
+{
+    /* Store the memory area size in the beginning of the block */
+    void *ptr = malloc(size + 8);
+    *((size_t *)ptr) = size;
+    return ptr + 8;
+}
+
+static void secure_free(void *ptr)
+{
+    size_t size;
+
+    ptr -= 8;
+    size = *((size_t *)ptr);
+
+    guaranteed_memset(ptr, 0, size + 8);
+    free(ptr);
+}
+

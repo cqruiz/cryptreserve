@@ -7,8 +7,7 @@
 
 #include <ulfius.h>
 #include "dbcache.h"
-#include "cryptreservesecureapi.h"
-#include "jwthelper.h"
+//#include "cryptreservesecureapi.h"
 
 #define PORT 2884
 #define PREFIX "/auth"
@@ -25,13 +24,11 @@ int callback_auth_basic (const struct _u_request * request, struct _u_response *
 int callback_create_user (const struct _u_request * request, struct _u_response * response, void * user_data);
 //int callback_create_user_login (const struct _u_request * request, struct _u_response * response, void * user_data);
 int callback_user_logon(const struct _u_request * request, struct _u_response * response, void * user_data);
-int callback_create_passport(const struct _u_request * request, struct _u_response * response, void * user_data);
 
 
 //Issuers
 int callback_issuer_logon(const struct _u_request * request, struct _u_response * response, void * user_data);
 int callback_create_issuer_account(const struct _u_request * request, struct _u_response * response, void * user_data);
-int callback_get_passport(const struct _u_request * request, struct _u_response * response, void * user_data);
 
 //File Upload/Download
 // Callback function used to download IPFS files

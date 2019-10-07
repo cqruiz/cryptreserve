@@ -33,7 +33,10 @@
 #include "../../include/jwthelper.h"
 #include <stdio.h>
 #include <string.h>
-//#include "../../include/jsonparser.h"
+#include "../../include/jsonparser.h"
+#include "jwthelper.h"
+#include "../../include/cryptreservesecureapi.h"
+#include <ulfius.h>
 
 #define PORT 2884
 #define PREFIX "/auth"
@@ -44,6 +47,8 @@
 
 #define USER "test"
 #define PASSWORD "testpassword"
+
+const char * get_filename_ext(const char*);
 
 char * read_file(const char * filename) {
 	char * buffer = NULL;
@@ -77,7 +82,7 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 	char reqData[128];
 	strcpy(reqData, (char *)request->binary_body);
 
-	printf("Creating user %s Len:%d\n", reqData, strlen(reqData));
+	printf("Creating user %s Len:%u\n", reqData, (unsigned int) strlen(reqData));
 	y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_create_user_account %s", reqData);
 
 	pUser pusr = malloc(sizeof(User));
@@ -152,7 +157,7 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 				if (cmpusr!=0)
 					y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_logini Incorrect Username/Password.");
 				else if (cmppwd!=0)
-					y_log_messsage(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_login Incorrect Username/Passsword.");
+					y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_login Incorrect Username/Passsword.");
 				else
 				{
 					char usrjson[512];
@@ -258,9 +263,12 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 			pUser pUsr = (pUser)malloc(sizeof(User));
 			if( GetUserByName(request->auth_basic_user, pUsr) == 0)
 			{
-				int cmpusr = o_strcmp(request->auth_basic_user, pUsr->name);
+				//int cmpusr = o_strcmp(request->auth_basic_user, pUsr->name);
+				o_strcmp(request->auth_basic_user, pUsr->name);
 
-				int cmppwd = o_strcmp(request->auth_basic_password, pUsr->password);
+				o_strcmp(request->auth_basic_password, pUsr->password);
+				//int cmppwd = o_strcmp(request->auth_basic_password, pUsr->password);
+
 				char usrjson[512];
 				user_to_json(pUsr, usrjson);
 				//Add a token to the db associarted to this user
@@ -295,7 +303,12 @@ int callback_options (const struct _u_request * request, struct _u_response * re
   
   //Access-Control-Max-Age
   // This value should be configurable, client should send this value as part of user configuration screen api
-  u_map_put(response->map_header, "Access-Control-Max-Age", ACCESS_CTRL_MAX_AGE);
+  char maxAge[5];
+
+  // convert 123 to string [buf]
+  //itoa(ACCESS_CTRL_MAX_AGE, maxAge, 10);
+  snprintf (maxAge, sizeof(maxAge), "%d", ACCESS_CTRL_MAX_AGE);
+  u_map_put(response->map_header, "Access-Control-Max-Age", maxAge);
   
   return U_CALLBACK_COMPLETE;
 }
@@ -425,7 +438,7 @@ int callback_auth_client_cert (const struct _u_request * request, struct _u_resp
   }
   return U_CALLBACK_CONTINUE;
 }
-
+/*
 void createsecretapi(char *cid, struct _u_response * response)
 {
 	// Initialize the instance
@@ -438,7 +451,6 @@ void createsecretapi(char *cid, struct _u_response * response)
   	if (ulfius_init_instance(&instance, PORT, NULL, "auth_basic_default") != U_OK) {
     		
 		printf("Error ulfius_init_instance, abort\n");
-		return(1);
 	}
 
 	//generate token;
@@ -446,7 +458,7 @@ void createsecretapi(char *cid, struct _u_response * response)
 	sprintf(Tok, "CryptReserve_%s", cid);
 
 	// OAuth2 Glewd Structure
-  	struct _gameon_resource_config g_config;
+  	struct _crytpreserve_resource_config g_config;
   	g_config.method = G_METHOD_HEADER;
   	g_config.oauth_scope = "scope1";
 	strcpy(g_config.jwt_decode_key, Tok);
@@ -460,10 +472,10 @@ void createsecretapi(char *cid, struct _u_response * response)
 
 	u_map_put(response->map_header, BODY_URL_CALLBACK, secretresource);
 
-	// OAuth2 authentication callback callback_check_gameon_access_token for the endpoint GET "/api/resource/*"
+	// OAuth2 authentication callback callback_check_crytpreserve_access_token for the endpoint GET "/api/resource/*"
 	//ulfius_add_endpoint_by_val(&instance, "GET", PSSPRTAPI, secretresource, 0, &callback_check_cryptreserve_token, (void *)&g_config);
 }
-
+*/
 #endif
 
 int StartRestServer(int argc, char **argv) {
@@ -568,3 +580,10 @@ int StartRestServer(int argc, char **argv) {
   
   	return 0;
 }
+
+const char *get_filename_ext(const char *filename) {
+    const char *dot = strrchr(filename, '.');
+    if(!dot || dot == filename) return "";
+    return dot + 1;
+}
+
