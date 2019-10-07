@@ -24,6 +24,14 @@ OBJECTS= restserver.o queue.o cryptreserveserver.o dbcache.o jsonparser.o cryptr
 OBJS = $(patsubst %,$(ODIR)/%,$(OBJECTS))
 EXE=../bin/CryptReserve
 
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+	CCFLAGS += -D LINUX
+endif
+ifeq ($(UNAME_S),Darwin)
+	CCFLAGS += -D OSX
+endif
+
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $(SOURCES) 

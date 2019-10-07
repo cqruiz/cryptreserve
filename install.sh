@@ -5,7 +5,13 @@ echo "*	 Uninstall Pre Requisits  *"
 echo "*****************************"
 echo "apt-get uninstall autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
 
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
 sudo apt-get -y remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
+        # ...
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+sudo brew install remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
+        # Mac OSX
+fi
 
 
 # Uninstall Orcania
