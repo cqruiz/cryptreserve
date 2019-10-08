@@ -5,13 +5,25 @@ echo "*	 Uninstall Pre Requisits  *"
 echo "*****************************"
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
-sudo apt-get -y remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
-echo "apt-get remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
-        # ...
+    sudo apt-get -y remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
+    echo "apt-get remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
+        # Ubuntu
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-brew remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
-echo "brew remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
-        # Mac OSX
+    brew remove autoconf 
+    brew remove automake 
+    brew remove libtool
+    brew remove libmicrohttpd-dev 
+    brew remove sqlite3 
+    brew remove libsqlite3-dev
+    brew remove libpq-dev 
+    brew remove libgnutls-dev 
+    brew remove libconfig-dev
+    brew remove libssl-dev 
+    brew renive libldap2-dev 
+    brew remove liboath-dev
+
+    echo "brew remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
+    # Mac OSX
 fi
 
 
@@ -154,6 +166,8 @@ fi
 echo "*****************************"
 echo "*	      Pre Requisits 	  *"
 echo "*****************************"
+
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
 echo "apt-get autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
 
 sudo apt-get -y install autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
@@ -386,7 +400,7 @@ if [ ! -d "glewlwyd" ]; then
 	echo "*****************************"
 	echo "Git clone Glewlwyd."
 	echo "*****************************"
-	git clone https://github.com/babelouest/glewlwyd.git
+	git clone https://github.com/blockchainbpi/glewlwyd.git
 fi
 
 if [ ! -d "glewlwyd/build" ]; then
