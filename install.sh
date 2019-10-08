@@ -9,19 +9,11 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
     echo "apt-get remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
         # Ubuntu
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    brew remove autoconf 
-    brew remove automake 
-    brew remove libtool
-    brew remove libmicrohttpd-dev 
-    brew remove sqlite3 
-    brew remove libsqlite3-dev
-    brew remove libpq-dev 
-    brew remove libgnutls-dev 
-    brew remove libconfig-dev
-    brew remove libssl-dev 
-    brew renive libldap2-dev 
-    brew remove liboath-dev
-
+    brew remove libpq
+    brew remove libconfig
+    brew remove gnutls
+    brew remove libmicrohttpd
+    
     echo "brew remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
     # Mac OSX
 fi
@@ -98,12 +90,13 @@ then
 	echo "*****************************"
 	echo "Uninstalling hoel"
 	echo "*****************************"
+    cd src
 	sudo make uninstall	
 	make clean
 	echo "*****************************"
 	echo "hoel cleaned"
 	echo "*****************************"
-	cd ..
+	cd ../..
 fi
 
 #Uninstall ulfius
@@ -144,9 +137,14 @@ then
 	echo "*****************************"
 	git clone https://github.com/blockchainbpi/glewlwyd.git
 fi
-if [ -d "glewlwyd/build" ]
+cd glewlwyd
+make clean
+cd src
+make clean
+cd ..
+if [ -d "build" ]
 then
-	cd glewlwyd/build 
+	cd build 
 	echo "*****************************"
 	echo "Uninstalling glewlwyd"
 	echo "*****************************"
@@ -156,7 +154,11 @@ then
 	echo "glewlwyd cleaned"
 	echo "*****************************"
 	cd ../..
+    echo "Current Dir: ${PWD}"
 	rm -rf glewlwyd/build
+else
+    cd ..
+    echo "Current Dir: ${PWD}"
 fi
 
 
@@ -168,41 +170,53 @@ echo "*	      Pre Requisits 	  *"
 echo "*****************************"
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
-echo "apt-get autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
+    echo "apt-get autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
 
-sudo apt-get -y install autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
+    sudo apt-get -y install autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
 
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    brew install autoconf
+    brew install automake
+    brew install libtool
+    brew install sqlite3
+    brew install libpq
+    brew install libconfig
+    brew install gnutls
+    brew install libmicrohttpd
+    echo "brew install autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
+fi
 
 # liblfds
-echo "*****************************"
-echo "*       Setup liblfds 	  *"
-echo "*****************************"
-if [ ! -d "liblfds"]; then
-	echo "*****************************"
-	echo "Dowload liblfds"
-	echo "*****************************"
-	git clone https://github.com/liblfds/liblfds.git
-fi
+#echo "*****************************"
+#echo "*       Setup liblfds 	  *"
+#echo "*****************************"
+#if [ ! -d "liblfds" ]; then
+##	echo "*****************************"
+#	echo "Dowload liblfds"
+#	echo "*****************************"
+#	git clone https://github.com/liblfds/liblfds.git
+#fi
 
 # Install liblfds 
-echo "*****************************"
-echo "Install liblfds"
-echo "*****************************"
-if [ -d "liblfds" ]; then
-	cd liblfds/liblfds/liblfds7.1.0/liblfds710/build/gcc_gnumake
-	echo "*****************************"
-	echo "liblfds building..."
-	echo "*****************************"
-	make
-	cd ../../../../../..
-	echo "*****************************"
-	echo "liblfds build completed."
-	echo "*****************************"
-fi
+#echo "*****************************"
+#echo "Install liblfds"
+#echo "*****************************"
+###if [ -d "liblfds" ]; then
+#	cd liblfds/liblfds/liblfds7.1.0/liblfds710/build/gcc_gnumake
+#	echo "*****************************"
+#	echo "liblfds building..."
+##	echo "*****************************"
+##	make
+#	cd ../../../../../..
+#	echo "*****************************"
+#	echo "liblfds build completed."
+#	echo "*****************************"
+#fi
 
 #json-c
 echo "*****************************"
 echo "Install json-c"
+echo "Current Dir: ${PWD}"
 echo "*****************************"
 if [ ! -d "json-c" ]; then
 	echo "*****************************"
@@ -226,6 +240,7 @@ else
 	echo "json-c alreadey installed."
 	echo "*****************************"
 fi
+echo "Current Dir: ${PWD}"
 
 #openssl
 echo "*****************************"
@@ -235,26 +250,26 @@ if [ ! -d "openssl" ]; then
 	echo "*****************************"
 	echo "openssl installation required..."
 	echo "*****************************"
-	git clone https://github.com:openssl/openssl.git
-fi
-
-if [ -d "openssl" ]; then
+	git clone https://github.com/openssl/openssl.git
 	cd openssl 
 	echo "*****************************"
 	echo "openssl building..."
+    echo "* Current Dir: ${PWD}"
 	echo "*****************************"
 	./config  
 	make
-	sudo make install
+	sudo make install_sw
 	cd ..
 	echo "*****************************"
 	echo "openssl build completed."
 	echo "*****************************"
 else
 	echo "*****************************"
-	echo "openssl installation error!"
+	echo "openssl previously installed!"
+    openssl version
 	echo "*****************************"
 fi
+echo "Current Dir: ${PWD}"
 
 # libjwt 
 echo "*****************************"
@@ -269,6 +284,7 @@ fi
 
 if [ -d "libjwt" ]; then
 	cd libjwt 
+    echo "Current Dir: ${PWD}"
 	autoreconf -i
 	echo "*****************************"
 	echo "libjwt building..."
@@ -285,32 +301,38 @@ else
 	echo "libjwt installation error!"
 	echo "*****************************"
 fi
+echo "Current Dir: ${PWD}"
 
 # Install Orcania
 echo "*****************************"
 echo "Install Orcania C Utilities"
+echo "Current Dir: ${PWD}"
 echo "*****************************"
 if [ -d "orcania" ]; then
 	echo "*****************************"
 	echo "Orcania building..."
 	echo "*****************************"
 	cd orcania/src
+    echo "Current Dir: ${PWD}"
 	make && sudo make install 
 	cd ../..
 	echo "*****************************"
 	echo "Orcania build completed."
 	echo "*****************************"
 fi
+echo "Current Dir: ${PWD}"
 
 # Install Yder for logging
 echo "*****************************"
 echo "Install Yder for Logging"
+echo "Current Dir: ${PWD}"
 echo "*****************************"
 if [ -d "yder" ]; then
 	echo "*****************************"
 	echo "Yder building..."
 	echo "*****************************"
 	cd yder/src
+    echo "Current Dir: ${PWD}"
     
     if [[ "$OSTYPE" == "linux-gnu" ]]; then
         make
@@ -324,6 +346,39 @@ if [ -d "yder" ]; then
 	echo "Yder build completed."
 	echo "*****************************"
 fi
+echo "Current Dir: ${PWD}"
+
+# Install Ulfius
+echo "*****************************"
+echo "Install Ulfius"
+echo "Current Dir: ${PWD}"
+echo "*****************************"
+
+if [ -d "ulfius" ]; then
+	echo "*****************************"
+	echo "Ulfius building..."
+	echo "*****************************"
+	cd ulfius
+    echo "Current Dir: ${PWD}"
+
+    if [ ! -d "build"]; then
+        mkdir build
+        echo "Current Dir: ${PWD}"
+    fi
+    
+    cd build
+    echo "Current Dir: ${PWD}"
+
+
+	cmake ..
+	make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 && sudo make install
+
+	cd ../..
+	echo "*****************************"
+	echo "Ulfius build completed."
+	echo "*****************************"
+fi
+echo "Current Dir: ${PWD}"
 
 # Install Hoel
 echo "*****************************"
@@ -334,14 +389,28 @@ if [ -d "hoel" ]; then
 	echo "*****************************"
 	echo "Hoel building..."
 	echo "*****************************"
-	cd hoel/src
-	make clean
-	sudo make uninstall
-	sudo apt-get -y install libmysqlclient-dev 
+
+    cd hoel/src
+    echo "Current Dir: ${PWD}"
+
+  #  if [ ! -d "build" ]; then
+   #     echo "mkdir build"
+  #      mkdir build
+   # fi
+ #   echo "cd  build"
+#	cd build
+
+ #   echo "cmake hoel"
+#	cmake ..
+
+    echo $OSTYPE
+
     if [[ "$OSTYPE" == "linux-gnu" ]]; then
 	    make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 
+        echo "linux-gnu"
     elif [[ "$OSTYPE" == "darwin"* ]]; then
 	    make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 
+        echo "darwin"
     fi
 
 	sudo make install
@@ -350,25 +419,8 @@ if [ -d "hoel" ]; then
 	echo "Hoel build completed."
 	echo "*****************************"
 fi
+echo "Current Dir: ${PWD}"
 
-# Install Ulfius
-echo "*****************************"
-echo "Install Ulfius"
-echo "*****************************"
-
-if [ -d "ulfius" ]; then
-	echo "*****************************"
-	echo "Ulfius building..."
-	echo "*****************************"
-	cd ulfius/src
-	make clean
-	sudo make uninstall
-	make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 && sudo make install
-	cd ../..
-	echo "*****************************"
-	echo "Ulfius build completed."
-	echo "*****************************"
-fi
 
 #Install libcbor
 echo "*****************************"
@@ -385,15 +437,19 @@ if [ ! -d "libcbor" ]; then
 		echo "LibCBOR Building..."
 		echo "*****************************"
 
+        cd  libcbor/src
+        echo "Current Dir: ${PWD}"
 		cmake -DCMAKE_BUILD_TYPE=Release -DCBOR_CUSTOM_ALLOC=ON libcbor
 		make
 		make install
 	fi
 fi
+echo "Current Dir: ${PWD}"
 
 #Install Glewlwyd
 echo "*****************************"
 echo "Install Glewlwyd"
+echo "Current Dir: ${PWD}"
 echo "*****************************"
 
 if [ ! -d "glewlwyd" ]; then
@@ -402,16 +458,23 @@ if [ ! -d "glewlwyd" ]; then
 	echo "*****************************"
 	git clone https://github.com/blockchainbpi/glewlwyd.git
 fi
+echo "Tools dir: (cd glewlwyd):  ${PWD}"
+echo "cd glewlwyd"
+cd glewlwyd
+echo "in glewlwyd: ${PWD}"
 
-if [ ! -d "glewlwyd/build" ]; then
-	mkdir glewlwyd/build
+if [ ! -d "build" ]; then
+	mkdir build
+    echo "mkdir build"
+    echo "curr dir glewlwyd still: ${PWD}"
 fi
 echo "*****************************"
 echo "Glewlwyd Building..."
 echo "*****************************"
 
-cd glewlwyd/build
-sudo cmake ..
+echo "cd src: ${PWD}"
+cd src
+echo "make in dir: ${PWD}"
 make
 sudo make install
 cd ../..
