@@ -9,7 +9,7 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
 sudo apt-get -y remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
         # ...
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-sudo brew install remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
+brew install remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
         # Mac OSX
 fi
 
@@ -24,7 +24,7 @@ then
 	echo "*****************************"
 	echo "git clone orcania."
 	echo "*****************************"
-	git clone https://github.com/babelouest/orcania.git
+	git clone https://github.com/blockchainbpi/orcania.git
 fi
 
 if [ -d "orcania" ]
@@ -51,7 +51,7 @@ then
 	echo "*****************************"
 	echo "*     git clone yder	  *"
 	echo "*****************************"
-	git clone https://github.com/babelouest/yder.git
+	git clone https://github.com/blokchainbpi/yder.git
 fi
 if [ -d "yder" ]
 then
@@ -77,7 +77,7 @@ then
 	echo "*****************************"
 	echo "*      git clone hoel	  *"
 	echo "*****************************"
-	git clone https://github.com/babelouest/hoel.git
+	git clone https://github.com/blockchainbpi/hoel.git
 fi
 if [ -d "hoel" ]
 then
@@ -103,7 +103,7 @@ then
 	echo "*****************************"
 	echo "git clone Ulfius."
 	echo "*****************************"
-	git clone https://github.com/babelouest/ulfius.git
+	git clone https://github.com/blockchainbpi/ulfius.git
 fi
 if [ -d "ulfius" ]
 then
@@ -296,7 +296,14 @@ if [ -d "yder" ]; then
 	echo "Yder building..."
 	echo "*****************************"
 	cd yder/src
-	make && sudo make install
+    
+    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+        make
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        make Y_DISABLE_JOURNALD=1
+    fi
+	
+    sudo make install
 	cd ../..
 	echo "*****************************"
 	echo "Yder build completed."
@@ -316,8 +323,13 @@ if [ -d "hoel" ]; then
 	make clean
 	sudo make uninstall
 	sudo apt-get -y install libmysqlclient-dev 
-	#make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 && sudo make install
-	make && sudo make install
+    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+	    make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+	    make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 
+    fi
+
+	sudo make install
 	cd ../..
 	echo "*****************************"
 	echo "Hoel build completed."
@@ -363,32 +375,6 @@ if [ ! -d "libcbor" ]; then
 		make install
 	fi
 fi
-
-#Install Curl
-echo "*****************************"
-echo "Install Curl"
-echo "*****************************"
-
-if [ ! -d "curl" ]; then
-	echo "*****************************"
-	echo "Git clone curl."
-	echo "*****************************"
-	git clone https://github.com/curl/curl.git
-fi
-
-echo "*****************************"
-echo "curl Building..."
-echo "*****************************"
-
-cd curl/src
-./configure
-make
-make install
-cd ../..
-echo "*****************************"
-echo "Done Buidling curl."
-echo "*****************************"
-
 
 #Install Glewlwyd
 echo "*****************************"
