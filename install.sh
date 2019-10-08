@@ -3,13 +3,14 @@
 echo "*****************************"
 echo "*	 Uninstall Pre Requisits  *"
 echo "*****************************"
-echo "apt-get uninstall autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
 sudo apt-get -y remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
+echo "apt-get remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
         # ...
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-brew install remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
+brew remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
+echo "brew remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
         # Mac OSX
 fi
 
@@ -129,7 +130,7 @@ then
 	echo "*****************************"
 	echo "git clone glewlwyd."
 	echo "*****************************"
-	git clone https://github.com/babelouest/glewlwyd.git
+	git clone https://github.com/blockchainbpi/glewlwyd.git
 fi
 if [ -d "glewlwyd/build" ]
 then
@@ -249,7 +250,7 @@ if [ ! -d "libjwt" ]; then
 	echo "*****************************"
 	echo "libjwt installation required..."
 	echo "*****************************"
-	git clone https://github.com:babelouest/libjwt.git
+	git clone https://github.com:blockchainbpi/libjwt.git
 fi
 
 if [ -d "libjwt" ]; then
