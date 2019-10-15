@@ -1,3 +1,6 @@
 tools/
+tools/*
 bin/
 *.o
+*.swp
+ltmain.sh
