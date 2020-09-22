@@ -1,15 +1,15 @@
 
 # Uninstall PreReqs
-echo "*****************************"
+echo "*****************************"libtoolize
 echo "*	 Uninstall Pre Requisits  *"
 echo "*****************************"
 echo "apt-get uninstall autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
-sudo apt-get -y remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
+sudo apt-get -y remove autoconf automake sqlite3 libsqlite3-dev libpq-dev  libconfig-dev libssl-dev libldap2-dev liboath-dev 
         # ...
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-sudo brew install remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
+sudo brew install remove autoconf automake libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
         # Mac OSX
 fi
 
@@ -100,7 +100,7 @@ echo "*****************************"
 
 if [ ! -d "ulfius" ]
 then
-	echo "*****************************"
+	echo "*****************************"libtoolize
 	echo "git clone Ulfius."
 	echo "*****************************"
 	git clone https://github.com/babelouest/ulfius.git
@@ -154,15 +154,19 @@ echo "*****************************"
 echo "*	      Pre Requisits 	  *"
 echo "*****************************"
 echo "apt-get autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
-
-sudo apt-get -y install autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
-
+sudo apt-get update
+sudo apt-get -y install automake libtool sqlite3 openssl libpq-dev libsqlite3-dev libpq-dev libconfig-dev libssl-dev libldap2-dev liboath-dev libsystemd-dev libgnutls28-dev libmicrohttpd-dev libcurl4-gnutls-dev 
+#sudo apt-get -y install --reinstall -dev 
+echo "*****************************"
+echo "*	       autoconf		  *"
+echo "*****************************"
+sudo apt-get -y install autoconf pkg-config
 
 # liblfds
 echo "*****************************"
 echo "*       Setup liblfds 	  *"
 echo "*****************************"
-if [ ! -d "liblfds"]; then
+if [ ! -d "liblfds" ]; then
 	echo "*****************************"
 	echo "Dowload liblfds"
 	echo "*****************************"
@@ -170,10 +174,11 @@ if [ ! -d "liblfds"]; then
 fi
 
 # Install liblfds 
-echo "*****************************"
-echo "Install liblfds"
-echo "*****************************"
 if [ -d "liblfds" ]; then
+	echo "*****************************"
+	echo "Install liblfds"
+	echo "*****************************"
+
 	cd liblfds/liblfds/liblfds7.1.0/liblfds710/build/gcc_gnumake
 	echo "*****************************"
 	echo "liblfds building..."
@@ -194,12 +199,17 @@ if [ ! -d "json-c" ]; then
 	echo "json-c installation required..."
 	echo "*****************************"
 	git clone https://github.com/json-c/json-c.git
+fi
+
+if [ -d "json-c" ]; then
 	cd json-c
-	sh autogen.sh
 	echo "*****************************"
 	echo "json-c building..."
 	echo "*****************************"
-	./configure 
+	rm -rf build
+	mkdir build
+	cd build
+	cmake ..
 	make
 	sudo make install
 	cd ..
@@ -213,33 +223,66 @@ else
 fi
 
 #openssl
+#echo "*****************************"
+#echo "Install openssl"
+#echo "*****************************"
+#if [ ! -d "openssl" ]; then
+#	echo "*****************************"
+#	echo "openssl installation required..."
+#	echo "*****************************"
+#	git clone https://github.com/openssl/openssl.git
+#fi
+
+#if [ -d "openssl" ]; then
+#	cd openssl 
+#	echo "*****************************"
+#	echo "openssl building..."
+#	echo "*****************************"
+#	./config  
+#	make
+#	sudo make install
+#	cd ..
+#	echo "*****************************"
+#	echo "openssl build completed."
+#	echo "*****************************"
+#else
+#	echo "*****************************"
+#	echo "openssl installation error!"
+#	echo "*****************************"
+#fi
+
+# Jansson 
 echo "*****************************"
-echo "Install openssl"
+echo "Install Jansson"
 echo "*****************************"
-if [ ! -d "openssl" ]; then
-	echo "*****************************"
-	echo "openssl installation required..."
-	echo "*****************************"
-	git clone https://github.com:openssl/openssl.git
+if [ ! -d "jansson" ]; then
+        echo "*****************************"
+        echo "jansson installation required..."
+        echo "*****************************"
+	git clone https://github.com/akheron/jansson.git
 fi
 
-if [ -d "openssl" ]; then
-	cd openssl 
-	echo "*****************************"
-	echo "openssl building..."
-	echo "*****************************"
-	./config  
-	make
-	sudo make install
-	cd ..
-	echo "*****************************"
-	echo "openssl build completed."
-	echo "*****************************"
+if [ -d "jansson" ]; then
+        cd jansson
+        autoreconf -i
+
+	./configure
+        echo "*****************************"
+        echo "jansson building..."
+        echo "*****************************"
+        make
+        sudo make install
+        cd ..
+        echo "*****************************"
+        echo "jansson build completed."
+        echo "*****************************"
 else
-	echo "*****************************"
-	echo "openssl installation error!"
-	echo "*****************************"
+        echo "*****************************"
+        echo "jansson installation error!"
+        echo "*****************************"
 fi
+
+
 
 # libjwt 
 echo "*****************************"
@@ -249,7 +292,7 @@ if [ ! -d "libjwt" ]; then
 	echo "*****************************"
 	echo "libjwt installation required..."
 	echo "*****************************"
-	git clone https://github.com:babelouest/libjwt.git
+	git clone https://github.com/babelouest/libjwt.git
 fi
 
 if [ -d "libjwt" ]; then
@@ -270,6 +313,33 @@ else
 	echo "libjwt installation error!"
 	echo "*****************************"
 fi
+
+# https://github.com/curl/curl.git
+# Install Curl
+#echo "*****************************"
+#echo "Install Curl C Utilities"
+#echo "*****************************"
+#if [ ! -d "curl" ]; then
+#	echo "*****************************"
+#	echo "Git clone Curl."
+#	echo "*****************************"
+#	git clone https://github.com/curl/curl.git
+#fi
+#if [ -d "curl" ]; then
+#	echo "*****************************"
+#	echo "Curl building..."
+#	echo "*****************************"
+#	mkdir curl/build
+#	cd curl/build
+#	cmake ..
+#	make && make install 
+#	cd ../..
+#	echo "*****************************"
+#	echo "Curl build completed."
+#	echo "*****************************"
+#fi
+
+# Install Yder for logging
 
 # Install Orcania
 echo "*****************************"
@@ -353,41 +423,42 @@ if [ ! -d "libcbor" ]; then
 	echo "Git clone LibCBOR."
 	echo "*****************************"
 	git clone https://github.com/PJK/libcbor
-	if [ -d "libcbor" ]; then
-		echo "*****************************"
-		echo "LibCBOR Building..."
-		echo "*****************************"
-
-		cmake -DCMAKE_BUILD_TYPE=Release -DCBOR_CUSTOM_ALLOC=ON libcbor
-		make
-		make install
-	fi
+fi
+if [ -d "libcbor" ]; then
+	echo "*****************************"
+	echo "LibCBOR Building..."
+	echo "*****************************"
+	cd libcbor
+	cmake -DCMAKE_C_FLAGS=-fPIC -DCMAKE_BUILD_TYPE=Release -DCBOR_CUSTOM_ALLOC=ON 
+	make
+	sudo make install
+	cd ..
 fi
 
 #Install Curl
-echo "*****************************"
-echo "Install Curl"
-echo "*****************************"
+#echo "*****************************"
+#echo "Install Curl"
+#echo "*****************************"
 
-if [ ! -d "curl" ]; then
-	echo "*****************************"
-	echo "Git clone curl."
-	echo "*****************************"
-	git clone https://github.com/curl/curl.git
-fi
+#if [ ! -d "curl" ]; then
+#	echo "*****************************"
+#	echo "Git clone curl."
+#	echo "*****************************"
+#	git clone https://github.com/curl/curl.git
+#fi
 
-echo "*****************************"
-echo "curl Building..."
-echo "*****************************"
+#echo "*****************************"
+#echo "curl Building..."
+#echo "*****************************"
 
-cd curl/src
-./configure
-make
-make install
-cd ../..
-echo "*****************************"
-echo "Done Buidling curl."
-echo "*****************************"
+#cd curl/src
+#./configure
+#make
+#make install
+#cd ../..
+#echo "*****************************"
+#echo "Done Buidling curl."
+#echo "*****************************"
 
 
 #Install Glewlwyd

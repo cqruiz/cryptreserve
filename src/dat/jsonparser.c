@@ -51,7 +51,7 @@ int json_to_user(char *Json, pUser pusr)
 	  //status = ERROR;
 	  return 1;
 	}
-	pusr->name=(char *)malloc((strlen(json_object_get_string(name)) + 1) * sizeof(char));
+	//pusr->name=(char *)malloc((strlen(json_object_get_string(name)) + 1) * sizeof(char));
 	strcpy(pusr->name, json_string_value(name));
 
 	//Password
@@ -62,12 +62,12 @@ int json_to_user(char *Json, pUser pusr)
           //status = ERROR;
           return 2;
         }
-	pusr->password=(char *)malloc((strlen(json_object_get_string(password)) + 1) * sizeof(char));
+	//pusr->password=(char *)malloc((strlen(json_object_get_string(password)) + 1) * sizeof(char));
         strcpy(pusr->password, json_string_value(password));
 
 	// Email
         json_t *email = NULL;
-        email = json_object_get(json, "id");
+        //email = json_object_get(json, "id");
         if (!email || !json_is_string(email))
         {
           //status = ERROR;
@@ -84,7 +84,7 @@ int json_to_user(char *Json, pUser pusr)
           return 4;
         }
         // id now equal to json_t object of type int.
-        pusr->id = json_int_value(id);
+        //pusr->id = json_int_value(id);
 
 	printf("Name: %s\n", pusr->name);
 	printf("Id: %d\n", pusr->id);
@@ -130,7 +130,7 @@ static void secure_free(void *ptr)
     ptr -= 8;
     size = *((size_t *)ptr);
 
-    guaranteed_memset(ptr, 0, size + 8);
+//    guaranteed_memset(ptr, 0, size + 8);
     free(ptr);
 }
 

@@ -5,7 +5,7 @@ ULFIUS_LOC=../tools/ulfius/src
 GLEWYWLYD_LOC=../tools/glewlwyd/src
 INCLUDE=/usr/local/include
 CFLAGS+=-c -g -Wall -L$(INCLUDE) $(EXAMPLE_INCLUDE)  $(ADDITIONALFLAGS) $(CPPFLAGS) $(GLEWLWYD_LOC) $(ULFIUS_LOC) -D_REENTRANT
-LIBS=-lc -L/usr/local/lib  -lgnutls -lulfius -lorcania -lssl -ljwt -ljansson -lcrypto -lsqlite3 -std=c99 -lyder 
+LIBS=-L/usr/local/lib -lc  -lgnutls -lulfius -lorcania -lssl -ljwt -ljansson -lcrypto -lsqlite3 -std=c99 -lyder 
 #-lcurl
 
 #-L$(ULFIUS_LOCATION)
