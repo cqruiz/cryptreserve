@@ -1,10 +1,17 @@
 #include "../../include/curlipfsclient.h"
 #include <pthread.h>
+#include <curl/curl.h>
 
 #define PATH "/api/v1"
 #define PORT 5000
 #define URL "localhost"
 #define PROTOCOL "https"
+
+    //////////////////////////////////////////////////////////////////////////////
+   //                                                                          //
+  //    curlipfsclient.c                                                      //
+ //                                                                          //
+//////////////////////////////////////////////////////////////////////////////
 
 
 static size_t
@@ -46,7 +53,9 @@ int StartCurlServer(CurlThreadData* pThreadCurlData)
 	//argv[2] = URL;
 	//argv[3] = *queue; 
 	/* create a Request Listener thread */
-	if(pthread_create(&processRequestThread, NULL, ProcessRequest, (void *)pThreadCurlData)) {\
+	
+	if(pthread_create(&processRequestThread, NULL, ProcessRequest, (void *)pThreadCurlData)) 
+	{
 		fprintf(stderr, "Error creating Request Listener thread\n");
 		return 1;
 	}
@@ -129,14 +138,14 @@ void SendIPFSData(DATA *data)
  		break;
 
 	case getfile:
-     		curl_easy_setop(curl, CURLOPT_URL, data->name);
+     		curl_easy_setopt(curl, CURLOPT_URL, data->name);
 		break;
 	default:
 		break;
      }
 
      //curl_easy_setup(curl, CURLOPT_WRITEDATA, data->name);
-     curl_easy_setup(curl, CURLOPT_FAILONERROR, 1L);
+     curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
      result =  curl_easy_perform(curl);
      if (result  == CURLE_OK)
 	printf("Download Successful!/n");
@@ -162,9 +171,9 @@ void GetIPFSData(DATA *data)
 
      curl = curl_easy_init();
 
-     curl_easy_setop(curl, CURLOPT_URL, data->addr);
+     curl_easy_setopt(curl, CURLOPT_URL, data->addr);
      //curl_easy_setup(curl, CURLOPT_WRITEDATA, fp);
-     curl_easy_setup(curl, CURLOPT_FAILONERROR, 1L);
+     curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
      result =  curl_easy_perform(curl);
      if (result  == CURLE_OK)
 	printf("Download Successful!/n");
