@@ -76,13 +76,14 @@ int Enqueue(Queue *pQueue, NODE *item) {
         pQueue->tail = item;
     }
     pQueue->size++;
+    sem_post(pQueue->newmsg_mutx);
     return TRUE;
 }
 
 NODE * Dequeue(Queue *pQueue) {
     /*the queue is empty or bad param*/
     NODE *item;
-    if (isEmpty(pQueue))
+    if (pQueue == NULL || isEmpty(pQueue))
         return NULL;
     item = pQueue->head;
     pQueue->head = (pQueue->head)->prev;
@@ -92,7 +93,7 @@ NODE * Dequeue(Queue *pQueue) {
 
 int isEmpty(Queue* pQueue) {
     if (pQueue == NULL) {
-        return FALSE;
+        return TRUE;
     }
     if (pQueue->size == 0) {
         return TRUE;

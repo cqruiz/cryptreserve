@@ -10,13 +10,13 @@ Run install.sh (./install.sh)
 * IPFS
 * C++
 * Json-lib
-* Jansson
-* libulfius-dev
+* Jansson - library for encoding, decoding and manipulating JSON data
+* Ulfius - libulfius-dev - HTTP Framework for REST Applications in C
 * OpenSSL
-* LibOrcania-dev
+* Orcania - LibOrcania-dev - Potluck of different fctns shared among C programs
 * Libjwt
-* Hoel
+* Hoel - Database (SQLIte3) abstraction library written in C.
 * Yder - Logging library for C applications
-* glewlwyd
+* Glewlwyd - OAuth2
 * libgnutls28-dev
 * JWT

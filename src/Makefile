@@ -13,13 +13,13 @@ LIBS=-L/usr/local/lib -lc  -lgnutls -lulfius -lorcania -lssl -ljwt -ljansson -lc
 IDIR = ../include
 CC=gcc
 CFLAGS+=-I$(IDIR) -g
-DEPS = ../include/restserver.h ../include/u_example.h ../include/queue.h  ../include/dbcache.h ../include/jsonparser.h ../include/cryptreservesecureapi.h ../include/jwthelper.h  ../include/static_file_callback.h
-ODIR=../obj
+DEPS = ../include/restserver.h ../include/u_example.h ../include/queue.h  ../include/dbcache.h ../include/jsonparser.h ../include/cryptreservesecureapi.h ../include/jwthelper.h  ../include/static_file_callback.h ../include/filecache.h
+ODIR=obj
 LDIR=lib
 LDFLAGS+=-pthread
-SOURCES=cryptreserveserver.c comm/restserver.c lib/queue.c dat/dbcache.c dat/jsonparser.c comm/cryptreservesecureapi.c encr/jwthelper.c comm/websocket.c comm/curlipfsclient.c
+SOURCES=cryptreserveserver.c comm/restserver.c lib/queue.c dat/dbcache.c dat/jsonparser.c comm/cryptreservesecureapi.c encr/jwthelper.c comm/websocket.c comm/curlipfsclient.c dat/filecache.c
 OBJ=$(SOURCES:.c=.o)
-OBJECTS= restserver.o queue.o cryptreserveserver.o dbcache.o jsonparser.o cryptreservesecureapi.o jwthelper.o curlipfsclient.o
+OBJECTS=$(addprefix $(ODIR)/, restserver.o queue.o cryptreserveserver.o dbcache.o jsonparser.o cryptreservesecureapi.o jwthelper.o curlipfsclient.o filecache.o)
 # webserver.o
 OBJS = $(patsubst %,$(ODIR)/%,$(OBJECTS))
 EXE=../bin/CryptReserve
@@ -32,8 +32,10 @@ ifeq ($(UNAME_S),Darwin)
 	CCFLAGS += -D OSX
 endif
 
+$(ODIR):
+	mkdir -p $(ODIR)
 
-%.o: %.c
+$(ODIR)/%.o: %.c
 	$(CC) -c $(CFLAGS) $(SOURCES) 
 
 $(EXE): $(OBJECTS)
@@ -47,7 +49,7 @@ debug:
 	$(CC) $(CFDEBUG) $(SOURCES)
 
 clean: 
-	rm -f *.o $(EXE)
+	rm -f $(OBJECTS) $(EXE)
 
 
 .PHONY: all static shared

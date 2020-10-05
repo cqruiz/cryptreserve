@@ -68,23 +68,29 @@ int StartCurlServer(CurlThreadData* pThreadCurlData)
 
 	return result;
 }
-
+int i=0;
 void ProcessRequest(void *argv)
 {
-	//Send Curl Requests 
+    printf("\nProcessRequest\n");
+
+    //Send Curl Requests 
     CurlThreadData* cth = (CurlThreadData*) argv;
     Queue *pQ = (Queue*)(cth->queue);
     NODE *pN;
+    
+    pN = (NODE*) malloc(sizeof (NODE));
+    pN->data.number = 100 + i++;
+    printf("\nProcessRequest-Call Enqueue(pQ,pN)\n");
+//    NODE *tmp = pN->
+ //   Enqueue(pQ, pN);   
 
-/*        pN = (NODE*) malloc(sizeof (NODE));
-        pN->data.number = 100 + i;
-        Enqueue(pQ, pN);   */
-
-    while(sleep(100)  && (bool)(cth->running)==true)  { // || pQ->wait4MsgEvent){
+    while(sleep(1000)  && (bool)(cth->running)==true)  { // || pQ->wait4MsgEvent){
+	printf("\nCheck Request Queued"); 
     while (!isEmpty(pQ)) {
+	printf("\nWe have Queued Data Incoming..."); 
 	pN = Dequeue(pQ); 
 	printf("\nDequeued: Name: %s  CID:%s Number:%d", pN->data.name, pN->data.CID, pN->data.number); 
-	SendIPFSData(pQ);
+	SendIPFSData(pN.Data);
 	free(pN);
 	}
     }
@@ -96,6 +102,7 @@ void ProcessRequest(void *argv)
 
 void SendIPFSData(DATA *data)
 {
+    printf("\nSendIPFSData\n");
      CURL *curl;
      struct MemoryStruct chunk;
  
@@ -113,7 +120,7 @@ void SendIPFSData(DATA *data)
     		curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 
 		/* set where to read from (on Windows you need to use READFUNCTION too) */ 
-    //		curl_easy_setopt(curl, CURLOPT_READDATA, fd);
+    //		curl_easy_setopt(curl, CURLOPT_READDATA, data->fpDatafd);
 
     		/* and give the size of the upload (optional) */ 
     //		curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE,

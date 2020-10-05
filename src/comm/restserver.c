@@ -381,6 +381,24 @@ int file_upload_callback (const struct _u_request * request,
                           size_t size, 
                           void * cls) {
   y_log_message(Y_LOG_LEVEL_DEBUG, "Got from file '%s' of the key '%s', offset %llu, size %zu, cls is '%s'", filename, key, off, size, cls);
+
+  //incoming
+  // 1. get the data and allocate *pData and cache to a file
+  // 2. Create and Queue up the New Node
+ CurlThreadData* cth = (CurlThreadData*) argv;
+    Queue *pQ = (Queue*)(cth->queue);
+    NODE *pN;
+
+    pN = (NODE*) malloc(sizeof (NODE));
+    pN->data.number = 100 + i++;
+    //Write to file
+    //
+    printf("\nProcessRequest-Call Enqueue(pQ,pN)\n");
+//    NODE *tmp = pN->
+ //   Enqueue(pQ, pN);   
+
+
+  //Write to the Queue for cross thread processing.
   return U_OK;
 }
 
@@ -543,7 +561,7 @@ int StartRestServer(int argc, char **argv) {
 	ulfius_add_endpoint_by_val(&instance, "OPTIONS", DISCOVER, "*", 0, &callback_options, NULL);
 
 	//File Upload
-	// Max post param size is 16 Kb, which means an uploaded file is no more than 16 Kb
+	// Max post param size is 16 kb, which means an uploaded file is no more than 16 kb
   	instance.max_post_param_size = 16*1024;
   
   	if (ulfius_set_upload_file_callback_function(&instance, &file_upload_callback, "my cls") != U_OK) {

@@ -5,10 +5,11 @@
 #include <unistd.h> //sleep
 #include <pthread.h>
 #include "../include/queue.h"
+#include "../include/cryptreserveserver.h"
 
     /////////////////////////////////////////////////////////////////////////////////
    //										  //
-  //	cryptreserve.c								 //
+  //	cryptreserveserver.c								 //
  //										//
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -19,8 +20,12 @@ void jsontest();
 void CurlIPFSClient(void *args )
 {
 	printf("Starting Crypt Reserve Curl IPFS Client Interface.");
-	//Queue *pQueue;
+    	pQueue =  ConstructQueue(100);
 	CurlThreadData* ctd = (CurlThreadData*)malloc(sizeof(CurlThreadData));
+	ctd->queue = &pQueue;
+	ctd->queue->head = malloc(sizeof(NODE));
+	ctd->queue->tail = malloc(sizeof(NODE));
+
 	
 	StartCurlServer(ctd);
 	printf("Stopped Curl Server.");
@@ -28,10 +33,10 @@ void CurlIPFSClient(void *args )
 
 
 //Rest API Server thread
-void RestAPIServer(void *args )
+void RestAPIServer(void *pQueue )
 {
 	printf("Starting Rest Server.");
-    	char *arrArgs[] = {"localhost","5001","peers","GET","/api/v0/bitswap/stat"};
+    	char *arrArgs[] = {"localhost","5001","peers","GET","/api/v0/bitswap/stat", pQueue};
 	//Initialize the database if non exists.
 	initDB();
 	StartRestServer(1,arrArgs);
@@ -46,7 +51,6 @@ int main(int argc, const char* argv[] )
     pthread_t curlIPFSClient;;
     pthread_t restAPIServer;
 
-//    Queue *pQ =  ConstructQueue(100);
 
  //   / create a Message Processor thread /
     if(pthread_create(&curlIPFSClient, NULL, (void*)CurlIPFSClient, NULL)) {
@@ -56,7 +60,8 @@ int main(int argc, const char* argv[] )
     printf("Running Curl IPFS Client Thread\n");
 
     /* create a Request Listener thread */
-    if(pthread_create(&restAPIServer, NULL, (void*)RestAPIServer, NULL)) {
+    if(pthread_create(&restAPIServer, NULL, (void*)RestAPIServer, (void*) pQueue )) 
+    {
 	    fprintf(stderr, "Error creating Request Listener thread\n");
 	    return 1;
     }

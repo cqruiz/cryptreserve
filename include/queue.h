@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
+#include <semaphore.h> 
 
 //#include "liblfds710.h"
 
@@ -28,6 +30,8 @@ typedef struct {
     char name[256];
     char addr[256];
     char CID[256];
+    FILE *fpData;
+    char filepath[256];
 } DATA;
 
 typedef struct Node_t {
@@ -42,6 +46,7 @@ typedef struct Queue {
     int size;
     int limit;
     bool running;
+    sem_t nemsg_mutx;
 } Queue;
 
 Queue *ConstructQueue(int limit);
