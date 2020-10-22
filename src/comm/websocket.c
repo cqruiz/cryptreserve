@@ -17,9 +17,12 @@
 #include <sys/stat.h>
 
 #include <ulfius.h>
-#include <u_example.h>
 
-#include "../../include/static_file_callback.h"
+//#include "../../include/ulfiusexample.h"
+//#include "../../include/staticfilecallback.h"
+
+#include "ulfiusexample.h"
+#include "staticfilecallback.h"
 
 #define PORT 9275
 #define PREFIX_WEBSOCKET "/websocket"
@@ -27,7 +30,7 @@
 
 #if defined(U_DISABLE_WEBSOCKET)
 
-int main() {
+int mainfn() {
   fprintf(stderr, "Websocket not supported, please recompile ulfius with websocket support\n");
   return 1;
 }
@@ -65,7 +68,7 @@ static char * read_file(const char * filename) {
  * main function
  * open the wbservice on port 9275
  */
-int main(int argc, char ** argv) {
+int mainfn(int argc, char ** argv) {
   int ret;
   struct _u_instance instance;
   struct _static_file_config file_config;

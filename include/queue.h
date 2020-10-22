@@ -46,7 +46,7 @@ typedef struct Queue {
     int size;
     int limit;
     bool running;
-    sem_t nemsg_mutx;
+    sem_t *newmsg_mutx;
 } Queue;
 
 Queue *ConstructQueue(int limit);

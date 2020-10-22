@@ -1,4 +1,5 @@
-#include "../../include/queue.h"
+//#include "../../include/queue.h"
+#include "queue.h"
 
 
 int test_queue()

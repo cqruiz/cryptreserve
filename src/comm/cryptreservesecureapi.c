@@ -13,9 +13,13 @@
 #include <orcania.h>
 #include <ulfius.h>
 #include <jansson.h>
-//#include "../../include/glewlwyd_resource.h"
-#include "../../tools/glewlwyd/src/glewlwyd.h"
-#include "../../include/cryptreservesecureapi.h"
+////#include "../../include/glewlwyd_resource.h"
+//#include "../../tools/glewlwyd/src/glewlwyd.h"
+//#include "../../include/cryptreservesecureapi.h"
+
+#include "glewlwyd.h"
+#include "cryptreservesecureapi.h"
+
 
 /**
  * check if bearer token has some of the specified scope

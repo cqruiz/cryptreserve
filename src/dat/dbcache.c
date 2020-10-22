@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include "../../include/dbcache.h"
 #include <setjmp.h>
 #include <string.h>
-
+//#include "../../include/dbcache.h"
+#include "dbcache.h"
 int getData(int, char *, pUser);
 int getDataByName(char *, char *, pUser);
 int insertDB(pUser, char *);
@@ -54,7 +54,7 @@ void initDB()
     }
 
 	//User Table
-    char sql[512] = "CREATE TABLE " USER_TABLE_NAME "(" ID_COL_NAME " INTEGER PRIMARY KEY, " NAME_COL_NAME " TEXT, " PWD_COL_NAME " TEXT);";
+    char sql[512] = "CREATE TABLE " USER_TABLE_NAME "(" ID_COL_NAME " INTEGER AUTO_INCREMENT PRIMARY KEY, " NAME_COL_NAME " TEXT, " PWD_COL_NAME " TEXT);";
 	if(setjmp(s_jumpBuffer))
 	{
 		printf("Exception creating table %s\n", USER_TABLE_NAME);
@@ -72,11 +72,11 @@ void initDB()
    	 	}
 	}
 
-    sprintf(sql, "INSERT INTO " USER_TABLE_NAME "( " ID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES (1,'Tom','1234','tom@mailinator.com') ;"
-    	"INSERT INTO " USER_TABLE_NAME "( " ID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES (2,'Rebecca','1234','rebecca@mailinator.com');"
-    	"INSERT INTO " USER_TABLE_NAME "( " ID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES (3,'Jim','1234','jim@mailinator.com');"
-    	"INSERT INTO " USER_TABLE_NAME "( " ID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES (4,'Roger','1234','roger@mailinator.com');"
-    	"INSERT INTO " USER_TABLE_NAME "( " ID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES (5,'Robert','1234','robert@mailinator.com');");
+    sprintf(sql, "INSERT INTO " USER_TABLE_NAME "( "NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('Tom','1234','tom@mailinator.com') ;"
+    	"INSERT INTO " USER_TABLE_NAME "( " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('Rebecca','1234','rebecca@mailinator.com');"
+    	"INSERT INTO " USER_TABLE_NAME "( " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('Jim','1234','jim@mailinator.com');"
+    	"INSERT INTO " USER_TABLE_NAME "( " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('Roger','1234','roger@mailinator.com');"
+    	"INSERT INTO " USER_TABLE_NAME "( " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('Robert','1234','robert@mailinator.com');");
         
     
     rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
@@ -93,7 +93,7 @@ void initDB()
     printf("The last Id of the inserted user row is %d\n", last_id);
 
 	//Issuer Table
-	sprintf(sql, "CREATE TABLE " CLIENT_TABLE_NAME " (" ID_COL_NAME " INTEGER PRIMARY KEY, " NAME_COL_NAME " TEXT, " PWD_COL_NAME " TEXT, " EMAIL_COL_NAME " TEXT); INSERT INTO " CLIENT_TABLE_NAME " ( " ID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES (1,'MGM','1234','MGM@mailinator.com');");
+	sprintf(sql, "CREATE TABLE " CLIENT_TABLE_NAME " (" ID_COL_NAME " INTEGER AUTO_INCREMENT PRIMARY KEY, " NAME_COL_NAME " TEXT, " PWD_COL_NAME " TEXT, " EMAIL_COL_NAME " TEXT); INSERT INTO " CLIENT_TABLE_NAME " ( " ID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES (1,'MGM','1234','MGM@mailinator.com');");
     
     rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
     
@@ -278,18 +278,27 @@ int getDataByName(char *name, char *tableName, pUser pUsrOut)
     	return;
 	}
 
-	if(sqlite3_step(res) != SQLITE_DONE) {
+	if(sqlite3_step(res) != SQLITE_DONE) 
+    {
+        //ID
 		pUsrOut->id = sqlite3_column_int(res, 0);
-		const char *value = (const char*) sqlite3_column_text(res, 1);
+        //Name
+    	const char *value = (const char*) sqlite3_column_text(res, 1);
 		if(value != NULL) {
 			pUsrOut->name = (char *)malloc(strlen(value)+1);
 			strcpy(pUsrOut->name, value); 
 		}
-		
+		//Password
 		value = (const char*) sqlite3_column_text(res, 2);
 		if(value != NULL) {
 			pUsrOut->password = malloc(strlen(value)+1);
 			strcpy(pUsrOut->password, value);
+		}
+        //Email
+        value = (const char*) sqlite3_column_text(res, 3);
+		if(value != NULL) {
+			pUsrOut->email = malloc(strlen(value)+1);
+			strcpy(pUsrOut->email, value);
 		}
 	}
 		// free value again
@@ -316,15 +325,16 @@ int insertDB(User *usr, char *tableName)
     }
 
     char sql[128];
-	sprintf(sql, "INSERT INTO %s (" ID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ")  VALUES (", tableName);
+	sprintf(sql, "INSERT INTO %s (" NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ")  VALUES (", tableName);
  
-    //id
+    /*//id
     char sId[1024];
     sprintf(sId,"%d", usr->id);
     strcat(sql, sId);
-    strcat(sql,",'");
+    strcat(sql,",'");*/
 
     //name
+    strcat(sql, "'");
     strcat(sql, usr->name);
     strcat(sql,"','");
 
@@ -381,12 +391,13 @@ int addToken(pUser pUsr, char * tablename)
 	sprintf(sql, "INSERT INTO %s (" TOK_COL_NAME ", " NAME_COL_NAME ")  VALUES (", tablename);
  
     //token
-    char sId[1024];
-    sprintf(sId,"%d", pUsr->id);
-    strcat(sql, sId);
-    strcat(sql,",'");
+//    char sId[1024];
+  //  sprintf(sId,"%d", pUsr->id);
+    //strcat(sql, sId);
+    //strcat(sql,",'");
 
     //name
+    strcat(sql, "'");
     strcat(sql, pUsr->name);
     strcat(sql,"','");
 

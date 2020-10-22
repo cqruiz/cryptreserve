@@ -1,4 +1,6 @@
-#include "../../include/curlipfsclient.h"
+//#include "../../include/curlipfsclient.h"
+#include "curlipfsclient.h"
+#include "queue.h"
 #include <pthread.h>
 #include <curl/curl.h>
 
@@ -90,7 +92,7 @@ void ProcessRequest(void *argv)
 	printf("\nWe have Queued Data Incoming..."); 
 	pN = Dequeue(pQ); 
 	printf("\nDequeued: Name: %s  CID:%s Number:%d", pN->data.name, pN->data.CID, pN->data.number); 
-	SendIPFSData(pN.Data);
+	SendIPFSData(pN->data);
 	free(pN);
 	}
     }

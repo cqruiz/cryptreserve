@@ -1,4 +1,3 @@
-#include "../../include/base64encode.h"
 #include <stdio.h>
 
 //Encodes Base64
@@ -6,6 +5,9 @@
 #include <openssl/evp.h>
 #include <openssl/buffer.h>
 #include <stdint.h>
+
+//#include "../../include/base64encode.h"
+#include "base64encode.h"
 
 int Base64Encode(const unsigned char* buffer, size_t length, char** b64text) { //Encodes a binary safe base 64 string
 	BIO *bio, *b64;

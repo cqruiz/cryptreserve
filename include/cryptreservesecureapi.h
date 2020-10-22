@@ -1,3 +1,6 @@
+#ifndef CR_SECAPI_HEADER_FILE
+#define CR_SECAPI_HEADER_FILE
+
 /**
  *
  * CryptReserve Secured API OAuth2 Authorization token check
@@ -8,6 +11,7 @@
  *
  */
 #include <jwt.h>
+#include <jansson.h>
 
 #define G_OK                       0
 #define G_ERROR                    1
@@ -46,3 +50,4 @@ json_t * access_token_get_payload(const char * token_value);
 int access_token_check_validity(struct _cryptreserve_resource_config * config, json_t * j_access_token);
 json_t * access_token_check_scope(struct _cryptreserve_resource_config * config, json_t * j_access_token);
 
+#endif

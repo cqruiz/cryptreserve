@@ -29,14 +29,24 @@
  * ./auth_client client.crt client.key <password>
  */
 
-#include "../../include/restserver.h"
-#include "../../include/jwthelper.h"
 #include <stdio.h>
 #include <string.h>
-#include "../../include/jsonparser.h"
-#include "jwthelper.h"
-#include "../../include/cryptreservesecureapi.h"
 #include <ulfius.h>
+
+/*#include "../../include/restserver.h"
+#include "../../include/jwthelper.h"
+#include "../../include/jsonparser.h"
+#include "../../include/curlipfsclient.h"
+#include "../../include/jwthelper.h"
+#include "../../include/cryptreservesecureapi.h"
+*/
+#include "restserver.h"
+#include "jwthelper.h"
+#include "jsonparser.h"
+#include "curlipfsclient.h"
+#include "jwthelper.h"
+#include "cryptreservesecureapi.h"
+
 
 #define PORT 2884
 #define PREFIX "/auth"
@@ -94,6 +104,7 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 	 loginReqData = malloc(strlen(request->binary_body)*sizeof(char)+1);
 	strcpy(loginReqData,(char *)request->binary_body);
 
+	printf("Raw body: %s\n", (char *)request->binary_body);
 	printf("Creating user %s Len:%u\n", reqData, (unsigned int) strlen(reqData));
 	y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_create_user_account %s", reqData);
 
@@ -123,7 +134,10 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 			char expires[16] = "10";
 			sprintf(key, "CryptReserve_%s", pusr->name);
 			sprintf(val, "%s", pusr->password);
+        	y_log_message(Y_LOG_LEVEL_INFO, "CreateUserLogin - \n\tk=%s \n\tvalue=%s", key, val);
+			
 			ulfius_add_cookie_to_response(response, key, val, NULL, 0, NULL, NULL, 0, 0);
+
 
 		  	if (ulfius_add_cookie_to_response(response, key, val, expires, 0, NULL, NULL, 0, 0) != U_OK) {
            		y_log_message(Y_LOG_LEVEL_ERROR, "CreateUserLogin - Error adding cookie %s/%s to response", key, val);
@@ -385,7 +399,8 @@ int file_upload_callback (const struct _u_request * request,
   //incoming
   // 1. get the data and allocate *pData and cache to a file
   // 2. Create and Queue up the New Node
- CurlThreadData* cth = (CurlThreadData*) argv;
+  
+  CurlThreadData* cth = (CurlThreadData*) cls;
     Queue *pQ = (Queue*)(cth->queue);
     NODE *pN;
 
@@ -532,8 +547,9 @@ int StartRestServer(int argc, char **argv) {
   	// Initialize the instance
   	struct _u_instance instance;
     
-  	printf("Start  Node!\n");
-  
+	printf("***************************\n");
+  	printf("* Start CryptReserve Node *\n");
+   	printf("***************************\n");
   	y_init_logs("auth_server", Y_LOG_MODE_CONSOLE, Y_LOG_LEVEL_DEBUG, NULL, "***************************");
   	y_init_logs("auth_server", Y_LOG_MODE_CONSOLE, Y_LOG_LEVEL_DEBUG, NULL, "* Start CryptReserve Node *");
   	y_init_logs("auth_server", Y_LOG_MODE_CONSOLE, Y_LOG_LEVEL_DEBUG, NULL, "***************************");
@@ -547,18 +563,20 @@ int StartRestServer(int argc, char **argv) {
   	}
   
 	//User API
-	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createuseraccount", 0, &callback_create_user_account, NULL);
+	//ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createuseraccount", 0, &callback_create_user_account, argv);
+	ulfius_add_endpoint_by_val(&instance, "POST", PREFIX, "/createuseraccount", 0, &callback_create_user_account, argv);
+
   	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/userlogin", 0, &callback_user_login, NULL);
 
 	//Client API
-	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createclientaccount", 0, &callback_create_client_account, NULL);
-  	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/clientlogin", 0, &callback_user_login, NULL);
+	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createclientaccount", 0, &callback_create_client_account, argv);
+  	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/clientlogin", 0, &callback_user_login, argv);
   	
 	//Create New Endpoint:
 	/*
 	  OPTIONS
 	*/
-	ulfius_add_endpoint_by_val(&instance, "OPTIONS", DISCOVER, "*", 0, &callback_options, NULL);
+	ulfius_add_endpoint_by_val(&instance, "OPTIONS", DISCOVER, "*", 0, &callback_options, argv);
 
 	//File Upload
 	// Max post param size is 16 kb, which means an uploaded file is no more than 16 kb
@@ -582,14 +600,14 @@ int StartRestServer(int argc, char **argv) {
   	// Endpoint list declaration
   	// The first 3 are webservices with a specific url
   	// The last endpoint will be called for every GET call and will serve the static files
-  	ulfius_add_endpoint_by_val(&instance, "*", FILE_PREFIX, NULL, 1, &callback_upload_file, NULL);
+  	ulfius_add_endpoint_by_val(&instance, "*", FILE_PREFIX, NULL, 1, &callback_upload_file, argv);
   	ulfius_add_endpoint_by_val(&instance, "GET", "*", NULL, 1, &callback_static_file, &mime_types);
 
 	//u_map_init();
 
 #ifndef U_DISABLE_GNUTLS
   	if (argc > 3) {
-    	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/client_cert", 0, &callback_auth_client_cert, NULL);
+    	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/client_cert", 0, &callback_auth_client_cert, argv);
   	}
 #endif
   

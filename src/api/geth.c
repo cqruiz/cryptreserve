@@ -1,4 +1,5 @@
-#include "../../include/curlipfsclient.h"
+//#include "../../include/curlipfsclient.h"
+#include "curlipfsclient.h"
 #include <pthread.h>
 
 #define PATH "/api/v1"

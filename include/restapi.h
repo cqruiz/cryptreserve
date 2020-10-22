@@ -1,5 +1,5 @@
-#ifndef BETNODE_HEADER_FILE
-#define BETNODE_HEADER_FILE
+#ifndef RESTAPI_HEADER_FILE
+#define RESTAPI_HEADER_FILE
 
 #include <stdio.h> /* printf, sprintf */
 #include <stdlib.h> /* exit, atoi, malloc, free */

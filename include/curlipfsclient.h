@@ -1,5 +1,5 @@
-#ifndef _CURL_EXAMPLE_
-#define _CURL_EXAMPLE_
+#ifndef _CURL_IPFS_CLIENT_
+#define _CURL_IPFS_CLIENT_
 
 #include <stdio.h>
 #include <stdio.h>

@@ -15,6 +15,11 @@
 #define USER "test"
 #define PASSWORD "testpassword"
 
+struct CurlThreadData {
+  
+};
+
+int i;
 
 char * read_file(const char * filename);
 int callback_auth_basic_body (const struct _u_request * request, struct _u_response * response, void * user_data);
