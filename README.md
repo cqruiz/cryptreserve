@@ -6,17 +6,17 @@ CryptReserve is a server exposing IPFS using Blockchain for permissioning and ex
 Run install.sh (./install.sh)
 
 ### Dependenices
-* Linux Server (AWS)
+* Linux or Mac OS
 * IPFS
-* C++
-* Json-lib
+* C - gcc
 * Jansson - library for encoding, decoding and manipulating JSON data
 * Ulfius - libulfius-dev - HTTP Framework for REST Applications in C
-* OpenSSL
 * Orcania - LibOrcania-dev - Potluck of different fctns shared among C programs
-* Libjwt
 * Hoel - Database (SQLIte3) abstraction library written in C.
 * Yder - Logging library for C applications
 * Glewlwyd - OAuth2
-* libgnutls28-dev
+* Json-lib
+* OpenSSL
 * JWT
+* Libjwt
+* libgnutls28-dev

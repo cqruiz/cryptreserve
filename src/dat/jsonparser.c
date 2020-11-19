@@ -32,6 +32,7 @@ int json_to_user(char *Json, pUser pusr)
 	json_t *json;
 	json_error_t error;
 
+	printf("json_to_user %s n", pusr->name);
 	json = json_loads(Json, 0, &error);
 //	json = json_load_file(*Json, JSON_DISABLE_EOF_CHECK, &error);
 	if (json == NULL)
@@ -57,6 +58,7 @@ int json_to_user(char *Json, pUser pusr)
 	//pusr->name=(char *)malloc((strlen(json_object_get_string(name)) + 1) * sizeof(char));
 	pusr->name=(char *)malloc((strlen(json_string_value(name)) + 1) * sizeof(char));
 	strcpy(pusr->name, json_string_value(name));
+	json_decref(name);
 	printf("Parsed Json Name %s\n", pusr->name);
 
 	//Password
@@ -72,7 +74,8 @@ int json_to_user(char *Json, pUser pusr)
 	//pusr->password=(char *)malloc((strlen(json_object_get_string(password)) + 1) * sizeof(char));
 	pusr->password=(char *)malloc((strlen(json_string_value(password)) + 1) * sizeof(char));
 	strcpy(pusr->password, json_string_value(password));
-	printf("Parsed Json Name %s\n", pusr->password);
+	json_decref(password);
+	printf("Parsed Json Password %s\n", pusr->password);
 
 	// Email
     json_t *email = NULL;
@@ -83,9 +86,11 @@ int json_to_user(char *Json, pUser pusr)
 		printf("Parse Json Email Error!\n");
 		return 3;
 	}
+	pusr->email=(char *)malloc((strlen(json_string_value(email)) + 1) * sizeof(char));
 	strcpy(pusr->email, json_string_value(email));
-	printf("Parsed Json Name %s\n", pusr->email);
-
+	json_decref(email);
+	printf("Parsed Json Email %s\n", pusr->email);
+	
 	// ID - Wallet Address 
 	// prove you own it or 
 	// we will create one for you (not ideal/safe)
@@ -99,10 +104,13 @@ int json_to_user(char *Json, pUser pusr)
 	// id now equal to json_t object of type int.
 	pusr->id = json_integer_value(id);
 */
-	printf("Name: %s\n", pusr->name);
+	if (pusr->name!=0)
+		printf("Name: %s\n", pusr->name);
 	//printf("Id: %d\n", pusr->id);
-	printf("Password: %s\n", pusr->password);
-	if (email!=0) printf("Email: %s\n", pusr->email);
+	if (pusr->password!=0)
+		printf("Password: %s\n", pusr->password);
+	if (pusr->email!=0) 
+		printf("Email: %s\n", pusr->email);
 
 	return 0;
 }
@@ -111,20 +119,23 @@ int user_to_json(pUser pUsr, const char *json)
 {
 	char *s = NULL;
 	json_t *root = json_object();
-  	json_t *json_arr = json_array();
-  
-	if (pUsr->name)
-  		json_object_set_new( root, "name", json_string( pUsr->name ) );
-	if (pUsr->password)
-  		json_object_set_new( root, "password", json_string( pUsr->password ) );
-  	json_object_set_new( root, "id", json_integer( pUsr->id ));
-	if (pUsr->email)
-  		json_object_set_new( root, "email", json_string( pUsr->email ));
 
+	if (pUsr->name)
+		json_object_set_new( root, "name", json_string( pUsr->name ));
+	if (pUsr->password)
+		json_object_set_new( root, "password", json_string( pUsr->password ));
+  	if (pUsr->id)
+	  	json_object_set_new( root, "id", json_integer( pUsr->id ));
+	if (pUsr->email)
+		json_object_set_new( root, "email", json_string( pUsr->email ));
+		
   	s = json_dumps(root, NULL);
+	printf("user_to_json = %s",s);
   	puts(s);
 	json = malloc ( strlen(s)  +1);
 	sprintf(json, "%s", s);
+	free(s);
+	printf("user_to_json json = %s", json);
 	return 0;
 }
 

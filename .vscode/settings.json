@@ -1,5 +1,6 @@
 {
     "files.associations": {
         "curlipfsclient.h": "c"
-    }
+    },
+    "cmake.configureOnOpen": true
 }

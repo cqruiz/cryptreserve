@@ -26,33 +26,34 @@ void jsontest();
 //Curl IPFS Client Interface thread
 void CurlIPFSClient(void *args )
 {
-	printf("Starting Crypt Reserve Curl IPFS Client Interface.");
-    	pQueue =  ConstructQueue(100);
+	printf("Starting Crypt Reserve Curl IPFS Client Interface.\n");
+    	
+	pQueue =  ConstructQueue(100);
 	CurlThreadData* ctd = (CurlThreadData*)malloc(sizeof(CurlThreadData));
 	ctd->queue = pQueue;
 	ctd->queue->head = malloc(sizeof(NODE));
 	ctd->queue->tail = malloc(sizeof(NODE));
 
-	
+	printf("StartCurslServer\n");
 	StartCurlServer(ctd);
-	printf("Stopped Curl Server.");
+	printf("Stopped Curl Server.\n");
 }
 
 
 //Rest API Server thread
 void RestAPIServer(void *pQueue )
 {
-	printf("Starting Rest Server.");
-    	char *arrArgs[] = {"localhost","5001","peers","GET","/api/v0/bitswap/stat", pQueue};
+	printf("Starting Rest Server.\n");
+    char *arrArgs[] = {"localhost","5001","peers","GET","/api/v0/bitswap/stat", pQueue};
 	//Initialize the database if non exists.
 	initDB();
 	StartRestServer(1,arrArgs);
-	printf("Stopped Rest Server.");
+	printf("Stopped Rest Server.\n");
 }
 
 int main(int argc, const char* argv[] )
 {
-    printf( "\nStarting the Crypt Reserve Node \n\n" );
+    printf("Starting the Crypt Reserve Node\n" );
 
     //Start the Curl IPFS Client and Rest API Server
     pthread_t curlIPFSClient;
@@ -71,6 +72,7 @@ int main(int argc, const char* argv[] )
  	tinfo = calloc(num_threads, sizeof(struct thread_info));
 	if (tinfo == NULL)
 	{
+		printf("Error allocating threads.\n");
 		fprintf(stderr, "Error allocating thread info\n");
 		return 1;
 	}
@@ -81,6 +83,7 @@ int main(int argc, const char* argv[] )
 	printf("Starting Curl IPFS Client Thread\n");
 	s = pthread_create(&tinfo[0].thread_id, &attr,
 						(void*)CurlIPFSClient, &tinfo[0]);
+	
 	if (s != 0)
 	{
 		fprintf(stderr, "Error creating Curl IPFS CLient thread\n");
@@ -124,18 +127,29 @@ int main(int argc, const char* argv[] )
 		s = pthread_join(tinfo[tnum].thread_id, &res);
 		if (s != 0)
 		{
+			printf("Error joining thread.\n");
 			fprintf(stderr, "Error joining thread id:%lu\n", tinfo[tnum].thread_id);
 	    	return 1;
 		}
-		printf("Joined with thread %d; returned value was %s\n\t\tthread id:%lu\n",
-				tinfo[tnum].thread_num, (char *) res, tinfo[tnum].thread_id);
-		free(res);      /* Free memory allocated by thread */
+		
+		printf("Joined with thread \n\t\tthread id:%lu\n", tinfo[tnum].thread_id);
+
+		if(res)
+		{
+			printf("Freeing res.\n");
+			//free(res);      /* Free memory allocated by thread */
+			free(tinfo[tnum].argv_string);
+		}
+	}
+	
+	if(tinfo)
+	{
+		printf("Joining thread, freeing tinfo and quiting.\n");
+		free(tinfo);
 	}
 
-	free(tinfo);
-
-    printf("Exiting CryptReserve...");
-	exit(EXIT_SUCCESS);
+    printf("Exiting CryptReserve...\n");
+	//exit(EXIT_SUCCESS);
 
 }
 

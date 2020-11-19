@@ -48,6 +48,7 @@ int StartCurlServer(CurlThreadData* pThreadCurlData)
 	pThreadCurlData->url = (char*)malloc(sizeof(char*)*strlen(URL))+1;  //"localhost";
 	strncpy(pThreadCurlData->url, URL, sizeof(pThreadCurlData->url)-1); 
 	pThreadCurlData->protocol  = (char*)malloc(sizeof(char*)*strlen(PROTOCOL)+1);  //"https";
+  pThreadCurlData->running = true;
 	strncpy(pThreadCurlData->protocol, PROTOCOL, sizeof(pThreadCurlData->protocol)); // = "https";
 
 	//argv[0] = running
@@ -61,10 +62,12 @@ int StartCurlServer(CurlThreadData* pThreadCurlData)
 		fprintf(stderr, "Error creating Request Listener thread\n");
 		return 1;
 	}
-	printf("Running Porcess Curl Request Listener Thread\n");
+	printf("Running Process Curl Request Listener Thread\n");
 
 
 	pthread_join(processRequestThread, NULL);
+
+  printf("Joined Curl Request Listener Thread.  Shutting down now...\n");
 
 //	curl_easy_cleanup(curl);
 
@@ -73,7 +76,7 @@ int StartCurlServer(CurlThreadData* pThreadCurlData)
 int i=0;
 void ProcessRequest(void *argv)
 {
-    printf("\nProcessRequest\n");
+    printf("ProcessRequest\n");
 
     //Send Curl Requests 
     CurlThreadData* cth = (CurlThreadData*) argv;
@@ -82,21 +85,21 @@ void ProcessRequest(void *argv)
     
     pN = (NODE*) malloc(sizeof (NODE));
     pN->data.number = 100 + i++;
-    printf("\nProcessRequest-Call Enqueue(pQ,pN)\n");
+    printf("ProcessRequest-Call Enqueue(pQ,pN)\n");
 //    NODE *tmp = pN->
  //   Enqueue(pQ, pN);   
 
     while(sleep(1000)  && (bool)(cth->running)==true)  { // || pQ->wait4MsgEvent){
-	printf("\nCheck Request Queued"); 
-    while (!isEmpty(pQ)) {
-	printf("\nWe have Queued Data Incoming..."); 
-	pN = Dequeue(pQ); 
-	printf("\nDequeued: Name: %s  CID:%s Number:%d", pN->data.name, pN->data.CID, pN->data.number); 
-	SendIPFSData(pN->data);
-	free(pN);
-	}
+      printf("Check Request Queued\n"); 
+      while (!isEmpty(pQ)) {
+	      printf("We have Queued Data Incoming...\n"); 
+	      pN = Dequeue(pQ); 
+	      printf("Dequeued: Name: %s  CID:%s Number:%d\n", pN->data.name, pN->data.CID, pN->data.number); 
+	      SendIPFSData(pN->data);
+	      free(pN);
+	    }
     }
-
+    printf("DesctructQueue/n");
     DestructQueue(pQ);
     return (EXIT_SUCCESS);	
 }
@@ -104,7 +107,7 @@ void ProcessRequest(void *argv)
 
 void SendIPFSData(DATA *data)
 {
-    printf("\nSendIPFSData\n");
+    printf("SendIPFSData\n");
      CURL *curl;
      struct MemoryStruct chunk;
  
@@ -165,28 +168,28 @@ void SendIPFSData(DATA *data)
 
 void read_callback()
 {
-
+  printf("CurlIPFSCLient::Read Call back\n");
 }
 
 void GetIPFSData(DATA *data)
 {
-     CURL *curl;
-     struct MemoryStruct chunk;
- 
-     chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */ 
-     chunk.size = 0;    /* no data at this point */ 
+  printf("GetIPFSData\n");
+  CURL *curl;
+  struct MemoryStruct chunk;
 
-     int result;
+  chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */ 
+  chunk.size = 0;    /* no data at this point */ 
 
-     curl = curl_easy_init();
+  int result;
 
-     curl_easy_setopt(curl, CURLOPT_URL, data->addr);
-     //curl_easy_setup(curl, CURLOPT_WRITEDATA, fp);
-     curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
-     result =  curl_easy_perform(curl);
-     if (result  == CURLE_OK)
-	printf("Download Successful!/n");
-     else
-        printf("ERROR: %ls\n", &result);
+  curl = curl_easy_init();
 
+  curl_easy_setopt(curl, CURLOPT_URL, data->addr);
+  //curl_easy_setup(curl, CURLOPT_WRITEDATA, fp);
+  curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
+  result =  curl_easy_perform(curl);
+  if (result  == CURLE_OK)
+    printf("Download Successful!/n");
+  else
+    printf("ERROR: %ls\n", &result);
 }

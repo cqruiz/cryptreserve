@@ -92,6 +92,8 @@ char * read_file(const char * filename) {
  * Callback function for creating a user account (username/password)
  */
 int callback_create_user_account (const struct _u_request * request, struct _u_response * response, void * user_data) {
+	
+	printf("callback_create_user_account \n");
 	y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_create_user_account");
 
 	// Create a wallet address from a managed ethereum node
@@ -172,7 +174,7 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
  * Callback function for creating a user login (username/password)
  */
 	int callback_user_login(const struct _u_request * request, struct _u_response * response, void * user_data) {
-
+		printf("callback_user_login \n");
 		y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_login");
 		if (request->auth_basic_user != NULL && request->auth_basic_password != NULL)
 		{
@@ -261,6 +263,7 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
  */
     int callback_create_client_account(const struct _u_request * request, struct _u_response * response, void * user_data) {
 		
+		printf("callback_create_client_account \n");
 		y_log_message(Y_LOG_LEVEL_DEBUG, "callback_create_issuer_login");
 
     	char reqData[128];
@@ -298,12 +301,16 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
     	return U_CALLBACK_CONTINUE;
     }  
 
+	int callback_user_logon(const struct _u_request * request, struct _u_response * response, void * user_data) {
+		return callback_client_logon(request, response, user_data);
+	}
 /**
  * Callback function for a client logon
  */
 	int callback_client_logon(const struct _u_request * request, struct _u_response * response, void * user_data) {
 
-		y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_logon");
+		printf("callback_client_logon \n");
+		y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_client_logon");
 		if (request->auth_basic_user != NULL && request->auth_basic_password != NULL)
 		{
 			pUser pUsr = (pUser)malloc(sizeof(User));
@@ -565,12 +572,19 @@ int StartRestServer(int argc, char **argv) {
 	//User API
 	//ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createuseraccount", 0, &callback_create_user_account, argv);
 	ulfius_add_endpoint_by_val(&instance, "POST", PREFIX, "/createuseraccount", 0, &callback_create_user_account, argv);
+	printf("*Endpoint: Added POST createuseraccount with callback_create_user_account \n");
+
 
   	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/userlogin", 0, &callback_user_login, NULL);
+	printf("*Endpoint: Added GET userlogin with callback_user_login \n");
 
 	//Client API
 	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createclientaccount", 0, &callback_create_client_account, argv);
-  	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/clientlogin", 0, &callback_user_login, argv);
+	printf("*Endpoint: Added GET createclientaccount with callback_create_client_account \n");
+
+  	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/clientlogin", 0, &callback_client_logon, argv);
+	printf("*Endpoint: Added GET clientlogin with callback_user_login \n");
+
   	
 	//Create New Endpoint:
 	/*

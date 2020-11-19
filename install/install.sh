@@ -1,109 +1,114 @@
+echo "*****************************"
+echo "cd into tools dir.."
+echo "*****************************"
+cd ../tools
+echo `pwd`
 
 # Uninstall PreReqs
-echo "*****************************"libtoolize
-echo "*	 Uninstall Pre Requisits  *"
-echo "*****************************"
-echo "apt-get uninstall autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
+#echo "*****************************"
+#echo "*	 Uninstall Pre Requisits  *"
+#echo "*****************************"
+#echo "apt-get uninstall autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
 
-if [[ "$OSTYPE" == "linux-gnu" ]]; then
-sudo apt-get -y remove autoconf automake sqlite3 libsqlite3-dev libpq-dev  libconfig-dev libssl-dev libldap2-dev liboath-dev 
-        # ...
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-sudo brew install remove autoconf automake libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
-        # Mac OSX
-fi
+#if [[ "$OSTYPE" == "linux-gnu" ]]; then
+#sudo apt-get -y remove autoconf automake sqlite3 libsqlite3-dev libpq-dev  libconfig-dev libssl-dev libldap2-dev liboath-dev 
+ #       # ...
+#elif [[ "$OSTYPE" == "darwin"* ]]; then
+#sudo brew install remove autoconf automake libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
+  #      # Mac OSX
+#fi
 
 
 # Uninstall Orcania
 echo "*****************************"
-echo "Check/Git Clone Orcania - C Utilities"
+echo "Check for Orcania installation - C Utilities"
 echo "*****************************"
 
 if [ ! -d "orcania" ]
 then
 	echo "*****************************"
-	echo "git clone orcania."
+	echo "  Orcania not installed"
 	echo "*****************************"
-	git clone https://github.com/babelouest/orcania.git
+	#git clone https://github.com/babelouest/orcania.git
 fi
 
 if [ -d "orcania" ]
 then
 	cd orcania
 	echo "*****************************"
-	echo "Uninstalling orcania"
+	echo "Uninstalling Orcania"
 	echo "*****************************"
 	sudo make uninstall	
 	make clean
 	echo "*****************************"
-	echo "orcania cleaned"
+	echo "Orcania cleaned"
 	echo "*****************************"
 	cd ..
 fi
 
 #Uninstall Yder
-echo "*****************************"
-echo "Check/Git Clone Yder - C Logger"
-echo "*****************************"
+echo "***************************************"
+echo "Check for Yder installation - C Logger*"
+echo "***************************************"
 
 if [ ! -d "yder" ]
 then
 	echo "*****************************"
-	echo "*     git clone yder	  *"
+	echo "*     Yder not installed	  *"
 	echo "*****************************"
-	git clone https://github.com/babelouest/yder.git
+	#git clone https://github.com/babelouest/yder.git
 fi
 if [ -d "yder" ]
 then
 	cd yder
 	echo "*****************************"
-	echo "Uninstalling yder"
+	echo "Uninstalling Yder"
 	echo "*****************************"
 	sudo make uninstall	
 	make clean
 	echo "*****************************"
-	echo "yder cleaned"
+	echo "Yder cleaned"
 	echo "*****************************"
 	cd ..
 fi
 
 #Uninstall hoel
-echo "*****************************"
-echo "Check/Git Clone hoel"
-echo "*****************************"
+echo "***************************************************"
+echo "Check for Hoel installation - Database abstraction*"
+echo "***************************************************"
 
 if [ ! -d "hoel" ]
 then
 	echo "*****************************"
-	echo "*      git clone hoel	  *"
+	echo "*      Hoel not installed	  *"
 	echo "*****************************"
-	git clone https://github.com/babelouest/hoel.git
+#	git clone https://github.com/babelouest/hoel.git
 fi
 if [ -d "hoel" ]
 then
 	cd hoel
 	echo "*****************************"
-	echo "Uninstalling hoel"
+	echo "Uninstalling Hoel"
 	echo "*****************************"
 	sudo make uninstall	
 	make clean
 	echo "*****************************"
-	echo "hoel cleaned"
+	echo "Hoel cleaned"
 	echo "*****************************"
 	cd ..
 fi
 
 #Uninstall ulfius
-echo "*****************************"
-echo "Check/Git Clone Ulfius"
-echo "*****************************"
+echo "*****************************************************************"
+echo "Check for Ulfius installation - Web framework for Rest endpoints*"
+echo "*****************************************************************"
 
 if [ ! -d "ulfius" ]
 then
-	echo "*****************************"libtoolize
-	echo "git clone Ulfius."
 	echo "*****************************"
-	git clone https://github.com/babelouest/ulfius.git
+	echo "Ulfius is not installed"
+	echo "*****************************"
+	#git clone https://github.com/babelouest/ulfius.git
 fi
 if [ -d "ulfius" ]
 then
@@ -121,13 +126,13 @@ fi
 
 #Uninstall Glewlwyd
 echo "*****************************"
-echo "Check/Git Clone glewlwyd"
+echo "Check/Git Clone Glewlwyd"
 echo "*****************************"
 
 if [ ! -d "glewlwyd" ]
 then
 	echo "*****************************"
-	echo "git clone glewlwyd."
+	echo " Glewlwyd is not installed."
 	echo "*****************************"
 	git clone https://github.com/babelouest/glewlwyd.git
 fi
@@ -151,11 +156,25 @@ fi
 
 # PreReqs
 echo "*****************************"
-echo "*	      Pre Requisits 	  *"
+echo "*	     Install Pre Requisits 	  *"
 echo "*****************************"
-echo "apt-get autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
+#echo "apt-get autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
 sudo apt-get update
-sudo apt-get -y install automake libtool sqlite3 openssl libpq-dev libsqlite3-dev libpq-dev libconfig-dev libssl-dev libldap2-dev liboath-dev libsystemd-dev libgnutls28-dev libmicrohttpd-dev libcurl4-gnutls-dev 
+
+REQUIRED_PKGS="automake libtool sqlite3 openssl libpq-dev libsqlite3-dev libpq-dev libconfig-dev libssl-dev libldap2-dev liboath-dev libsystemd-dev libgnutls28-dev libmicrohttpd-dev libcurl4-gnutls-dev"
+
+for REQUIRED_PKG in $REQUIRED_PKGS; do
+	PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG|grep "install ok installed")
+	echo Checking for $REQUIRED_PKG: $PKG_OK
+	if [ "" = "$PKG_OK" ]; then
+		echo "Missing $REQUIRED_PKG. Installing $REQUIRED_PKG."
+		sudo apt-get -y install $REQUIRED_PKG 
+	else
+		echo "$REQUIRED_PKG alread installed.  Skipping $REQUIRED_PKG."
+	fi
+done
+
+
 #sudo apt-get -y install --reinstall -dev 
 echo "*****************************"
 echo "*	       autoconf		  *"
@@ -167,9 +186,9 @@ echo "*****************************"
 echo "*       Setup liblfds 	  *"
 echo "*****************************"
 if [ ! -d "liblfds" ]; then
-	echo "*****************************"
-	echo "Dowload liblfds"
-	echo "*****************************"
+	echo "*************************************************************"
+	echo "* Download liblfds (https://github.com/liblfds/liblfds.git) *"
+	echo "*************************************************************"
 	git clone https://github.com/liblfds/liblfds.git
 fi
 
@@ -195,9 +214,9 @@ echo "*****************************"
 echo "Install json-c"
 echo "*****************************"
 if [ ! -d "json-c" ]; then
-	echo "*****************************"
-	echo "json-c installation required..."
-	echo "*****************************"
+	echo "***************************************************************************"
+	echo "* json-c installation required... (https://github.com/json-c/json-c.git)  *"
+	echo "***************************************************************************"
 	git clone https://github.com/json-c/json-c.git
 fi
 
@@ -221,35 +240,6 @@ else
 	echo "json-c alreadey installed."
 	echo "*****************************"
 fi
-
-#openssl
-#echo "*****************************"
-#echo "Install openssl"
-#echo "*****************************"
-#if [ ! -d "openssl" ]; then
-#	echo "*****************************"
-#	echo "openssl installation required..."
-#	echo "*****************************"
-#	git clone https://github.com/openssl/openssl.git
-#fi
-
-#if [ -d "openssl" ]; then
-#	cd openssl 
-#	echo "*****************************"
-#	echo "openssl building..."
-#	echo "*****************************"
-#	./config  
-#	make
-#	sudo make install
-#	cd ..
-#	echo "*****************************"
-#	echo "openssl build completed."
-#	echo "*****************************"
-#else
-#	echo "*****************************"
-#	echo "openssl installation error!"
-#	echo "*****************************"
-#fi
 
 # Jansson 
 echo "*****************************"
@@ -313,33 +303,6 @@ else
 	echo "libjwt installation error!"
 	echo "*****************************"
 fi
-
-# https://github.com/curl/curl.git
-# Install Curl
-#echo "*****************************"
-#echo "Install Curl C Utilities"
-#echo "*****************************"
-#if [ ! -d "curl" ]; then
-#	echo "*****************************"
-#	echo "Git clone Curl."
-#	echo "*****************************"
-#	git clone https://github.com/curl/curl.git
-#fi
-#if [ -d "curl" ]; then
-#	echo "*****************************"
-#	echo "Curl building..."
-#	echo "*****************************"
-#	mkdir curl/build
-#	cd curl/build
-#	cmake ..
-#	make && make install 
-#	cd ../..
-#	echo "*****************************"
-#	echo "Curl build completed."
-#	echo "*****************************"
-#fi
-
-# Install Yder for logging
 
 # Install Orcania
 echo "*****************************"
@@ -434,32 +397,6 @@ if [ -d "libcbor" ]; then
 	sudo make install
 	cd ..
 fi
-
-#Install Curl
-#echo "*****************************"
-#echo "Install Curl"
-#echo "*****************************"
-
-#if [ ! -d "curl" ]; then
-#	echo "*****************************"
-#	echo "Git clone curl."
-#	echo "*****************************"
-#	git clone https://github.com/curl/curl.git
-#fi
-
-#echo "*****************************"
-#echo "curl Building..."
-#echo "*****************************"
-
-#cd curl/src
-#./configure
-#make
-#make install
-#cd ../..
-#echo "*****************************"
-#echo "Done Buidling curl."
-#echo "*****************************"
-
 
 #Install Glewlwyd
 echo "*****************************"
