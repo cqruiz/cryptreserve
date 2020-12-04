@@ -1,4 +1,4 @@
-#include "jwthelper.h"
+#include "../../include/jwthelper.h"
 #include <string.h>
 #include <time.h>
 

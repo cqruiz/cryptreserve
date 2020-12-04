@@ -18,11 +18,11 @@
 
 #include <ulfius.h>
 
-//#include "../../include/ulfiusexample.h"
-//#include "../../include/staticfilecallback.h"
+#include "../../include/ulfiusexample.h"
+#include "../../include/staticfilecallback.h"
 
-#include "ulfiusexample.h"
-#include "staticfilecallback.h"
+//#include "ulfiusexample.h"
+//#include "staticfilecallback.h"
 
 #define PORT 9275
 #define PREFIX_WEBSOCKET "/websocket"

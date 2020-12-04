@@ -1,6 +1,8 @@
 # Makefile to create authenticated IPFS API #
 
-BASE=.
+BASE:= ${CURDIR}
+
+
 CC=gcc
 INCDIR=$(BASE)/include
 OBJDIR=$(BASE)/obj
@@ -27,8 +29,8 @@ DEPS = $(patsubst %,$(INCDIR)/%,$(_DEPS))
 _SOURCES=  dat/jsonparser.c comm/restserver.c lib/queue.c dat/dbcache.c api/cryptreserveserver.c comm/cryptreservesecureapi.c encr/jwthelper.c comm/websocket.c comm/curlipfsclient.c dat/filecache.c
 SOURCES= $(patsubst %.c,$(SRCDIR)/%.c,$(_SOURCES))
 _OBJECTS = $(patsubst %.c,%.o,$(notdir $(_SOURCES)))
-OBJECTS = $(patsubst %.c,$(OBJDIR)/%.o,$(notdir $(_SOURCES)))
-#OBJECTS = $(patsubst %.c,%.o,$(notdir $(_SOURCES)))
+#OBJECTS = $(patsubst %.c,$(OBJDIR)/%.o,$(notdir $(_SOURCES)))
+OBJECTS = $(patsubst %.c,%.o,$(notdir $(_SOURCES)))
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
@@ -46,15 +48,32 @@ endif
 
 all: $(EXE)
 
-$(EXE): $(_OBJECTS)
-	@echo $(CC) LINKER: [$(notdir $%)] '->' [$(notdir $@)]
-	$(CC) $(CFLAGS) -o $(EXE) $(_OBJECTS) $(LIBS) 
-	@echo "Released $(EXE) Successfully!"
 
-$(_OBJECTS) : $(SOURCES) directories
-	@echo $(CC): [$<] '->' [$@]
-	@$(CC) -c $< $(CFLAGS) $(INCLUDES)  $(SOURCES)
-	#-o $@ 
+
+$(EXE): $(OBJECTS)
+	@echo   
+	@echo   
+	@echo $(CC) LINKER: [$(notdir $%)] '->' [$(notdir $@)]
+	@echo   
+	@echo LINKER: $(CC) $(CFLAGS) $(LIBS) -o  $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) 
+	@echo   
+	@echo   
+
+$(OBJECTS) : $(SOURCES) $(DEPS) directories
+	@echo
+	@echo
+	@echo Building Object File: $(CC) OBJECTS: [$<] '->' [$@]
+	@echo
+	@echo
+	@echo $(CC): [$(SOURCES) ] '->' [$@]
+	@echo
+	@echo
+	@echo $(CC) -c -o $@   $(INCLUDES) $(SOURCES) $(CFLAGS) 
+	@echo
+	@echo
+	@$(CC) -c  $(INCLUDES) $(SOURCES)  $(CFLAGS) $(DEPS)
+
 
 directories :
 	mkdir -p $(OBJDIR)
@@ -64,3 +83,5 @@ clean:
 	rm -rf $(OBJECTS)
 	rm -rf $(BINDIR)
 	rm -rf $(OBJDIR)
+
+.PHONY: default

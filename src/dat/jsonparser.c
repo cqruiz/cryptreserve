@@ -1,11 +1,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <jansson.h>
-//#include "../../include/jsonparser.h"
-#include "jsonparser.h"
+#include "../../include/jsonparser.h"
+#include <stdlib.h>
 
 /*
-const char *to_json_string(json_object *obj, int flags)
+const char *to_json_string(void *obj, int flags)
 {
 	int length;
 	char *copy;
@@ -16,7 +16,7 @@ const char *to_json_string(json_object *obj, int flags)
 	if (copy == NULL)
 		printf("to_json_string: Allocation failed!\n");
 	else {
-		result = json_object_to_json_string_ext(obj, flags);
+		//result = json_object_to_json_string_ext(obj, flags);
 		if (length != strlen(result))
 			printf("to_json_string: Length mismatch!\n");
 		if (strcmp(copy, result) != 0)
@@ -26,71 +26,95 @@ const char *to_json_string(json_object *obj, int flags)
 	return result;
 }
 */
-
-int json_to_user(char *Json, pUser pusr)
+int json_to_user(char *Json, struct User **pusr)
 {
+	printf("json_to_user: %s\n", Json);
+
 	json_t *json;
 	json_error_t error;
-
-	printf("json_to_user %s n", pusr->name);
 	json = json_loads(Json, 0, &error);
-//	json = json_load_file(*Json, JSON_DISABLE_EOF_CHECK, &error);
-	if (json == NULL)
+
+	if(json==NULL)	
 	{
-	//	y_log_message(Y_LOG_LEVEL_INFO, "CreateUserLogin - \n\tk=%s \n\tvalue=%s", key, val);
-	//  LOG_PRINT(LOGLEVEL_ERROR, "Loading json string failed: %s - %s; pos=%u\n",
-	  //                           error.text, error.source, error.position);
 		printf("Loading json string failed: %s - %s; pos=%u\n",
-	    		error.text, error.source, error.position);
-	  return 1;
+	    	error.text, error.source, error.position);
+	  	return 1;
 	}
+	//json_incref(json);
 
-	printf("Parse Json Name \n");
 	//Name
-	json_t *name = NULL;
-	name = json_object_get(json, "Name");
-	if (!name || !json_is_string(name))
+	const char *Key = "Name\0";
+	LogMsg("Parse Json Name");
+	//ParseJsonVal(Key, &(*pusr)->name, Json);
+	json_t *jsoname, *jsopassword, *jsoemail;
+	jsoname = json_object_get(json, Key);
+	LogMsg("Name json_object_get");
+
+	char *strnmeval = json_string_value(jsoname);
+	(*pusr)->name = calloc(strlen(strnmeval)+1, sizeof(char));
+	sprintf((*pusr)->name,"%s", strnmeval);
+
+	/*
+	if (!jsoname || strlen((*pusr)->name) == 0 )
 	{
-	  //status = ERROR;
-	  printf("Parse Json Name Error!\n");
+		printf("Parse Json Name Error  !\n");
+		json_decref(json);
+		return 1;
+	}*/
+	printf("Parsed Json Name %s\n", (*pusr)->name);
+	
+		
+	//Password
+	LogMsg("Parse Json Password");
+	const char* KeyPwd = "Password\0";
+	//ParseJsonVal(KeyPwd, &(*pusr)->password, Json);
+	jsopassword = json_object_get(json, KeyPwd);
+	LogMsg("Password json_object_get");
+
+	char *strpwd = json_string_value(jsopassword);
+	(*pusr)->password = calloc(strlen(strpwd)+1, sizeof(char));
+	sprintf((*pusr)->password, "%s", strpwd);
+	printf("PWD json_string_value = %s\n", (*pusr)->password);
+
+	/*if (!jsopassword || strlen((*pusr)->password) == 0 )
+	{
+	  printf("Parse Json Password Error  !\n");
+	  json_decref(json);
 	  return 1;
 	}
-	//pusr->name=(char *)malloc((strlen(json_object_get_string(name)) + 1) * sizeof(char));
-	pusr->name=(char *)malloc((strlen(json_string_value(name)) + 1) * sizeof(char));
-	strcpy(pusr->name, json_string_value(name));
-	json_decref(name);
-	printf("Parsed Json Name %s\n", pusr->name);
-
-	//Password
-	json_t *password = NULL;
-	password = json_object_get(json, "Password");
-	if (!password || !json_is_string(password))
-	{
-		//status = ERROR;
-		printf("Parse Json Password Error!\n");
-		return 2;
-	}
-
-	//pusr->password=(char *)malloc((strlen(json_object_get_string(password)) + 1) * sizeof(char));
-	pusr->password=(char *)malloc((strlen(json_string_value(password)) + 1) * sizeof(char));
-	strcpy(pusr->password, json_string_value(password));
-	json_decref(password);
-	printf("Parsed Json Password %s\n", pusr->password);
+	*/
+	printf("Parsed Json Password %s\n", (*pusr)->password);
 
 	// Email
-    json_t *email = NULL;
-	email = json_object_get(json, "Email");
-	if (!email || !json_is_string(email))
-	{
-		//status = ERROR;
-		printf("Parse Json Email Error!\n");
-		return 3;
-	}
-	pusr->email=(char *)malloc((strlen(json_string_value(email)) + 1) * sizeof(char));
-	strcpy(pusr->email, json_string_value(email));
-	json_decref(email);
-	printf("Parsed Json Email %s\n", pusr->email);
+	LogMsg("Parse Json Email");
+	const char *KeyEmail="Email\0";
+	//ParseJsonVal(KeyEmail, &(*pusr)->email, Json);
+	jsoemail = json_object_get(json, KeyEmail);
+	//LogMsg("Email json_object_get");
+	char *stremail = json_string_value(jsoemail);
+	(*pusr)->email = calloc(strlen(stremail)+1, sizeof(char));
+	sprintf((*pusr)->email, "%s", stremail);
+	//(*pusr)->email = json_string_value(jsoemail);
+	printf("Email json_string_value = %s\n", (*pusr)->email);
+
+	json_decref(json);
+	return 0;
+
 	
+/*
+	if (!jsoemail || strlen((*pusr)->email) == 0 )
+	{
+	  printf("Parse Json Email Error  !\n");
+	  json_decref(json);
+	  return 1;
+	}
+*/
+	printf("Parsed Json Email %s\n", (*pusr)->email);
+
+	json_decref(json);
+	return 0;
+}
+
 	// ID - Wallet Address 
 	// prove you own it or 
 	// we will create one for you (not ideal/safe)
@@ -104,20 +128,70 @@ int json_to_user(char *Json, pUser pusr)
 	// id now equal to json_t object of type int.
 	pusr->id = json_integer_value(id);
 */
-	if (pusr->name!=0)
+	//decrement loads
+//	json_decref(json);
+
+/*	if (pusr->name!=0)
 		printf("Name: %s\n", pusr->name);
 	//printf("Id: %d\n", pusr->id);
 	if (pusr->password!=0)
 		printf("Password: %s\n", pusr->password);
 	if (pusr->email!=0) 
 		printf("Email: %s\n", pusr->email);
+*/
+
+
+	//return 0;
+//}
+	
+int ParseJsonVal(const char *Key, char **RetVal, const char *jsonSrc)
+{
+	LogMsg("ParseJsonVal!");
+	printf("Key:%s JsonSrc:%s RetVal:%ul\n", Key, jsonSrc, *RetVal);
+
+	json_t *json;
+	json_error_t error;
+	json = json_loads(jsonSrc, 0, &error);
+
+	if (json == NULL)
+	{
+	//	y_log_message(Y_LOG_LEVEL_INFO, "CreateUserLogin - \n\tk=%s \n\tvalue=%s", key, val);
+	//  LOG_PRINT(LOGLEVEL_ERROR, "Loading json string failed: %s - %s; pos=%u\n",
+	  //                           error.text, error.source, error.position);
+		printf("Loading json string failed: %s - %s; pos=%u\n",
+	    		error.text, error.source, error.position);
+	  return 1;
+	}
+	
+	json_t *jsonobj;
+	jsonobj = json_object_get(json, Key);
+	LogMsg("json_object_get");
+
+	char *strval = json_string_value(jsonobj);
+	printf("json_string_value = %s\n", strval);
+
+	if (!jsonobj || strlen(strval) == 0 )
+	{
+	  printf("Parse Json Name Error  !\n");
+	  return 1;
+	}
+	
+	char *ResultMemoryValue = (char *)malloc((strlen(strval) + 1) * sizeof(char));
+	printf("malloced ResultMemoryValue address= %ul\n", &ResultMemoryValue);
+	strcpy(ResultMemoryValue, strval);
+	RetVal=&ResultMemoryValue;
+	
+	printf("RetVal = %s/n", RetVal);
+	//json_decref(json);
+	json_decref(jsonobj);
 
 	return 0;
 }
 
-int user_to_json(pUser pUsr, const char *json)
+int user_to_json(const UserPtr pUsr, char *json)
 {
 	char *s = NULL;
+
 	json_t *root = json_object();
 
 	if (pUsr->name)

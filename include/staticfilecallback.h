@@ -56,8 +56,8 @@
  * 
  */
 
-#ifndef _STATIC_FILE
-#define _STATIC_FILE
+#ifndef STATIC_FILE
+#define STATIC_FILE
 
 #define STATIC_FILE_CHUNK 256
 

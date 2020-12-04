@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <unistd.h> //sleep
 #include <pthread.h>
-#include "dbcache.h"
-#include "restserver.h"
-#include "curlipfsclient.h"
-#include "cryptreserveserver.h"
+#include "../../include/dbcache.h"
+#include "../../include/restserver.h"
+#include "../../include/curlipfsclient.h"
+#include "../../include/cryptreserveserver.h"
+#include "../../include/queue.h"
 
     //////////////////////////////////////////////////////////////////////////////
    //										  								   //
@@ -13,42 +14,37 @@
  //																			 //
 //////////////////////////////////////////////////////////////////////////////
 
-struct thread_info {    /* Used as argument to thread_start() */
-           pthread_t thread_id;        /* ID returned by pthread_create() */
-           int       thread_num;       /* Application-defined thread # */
-           char     *argv_string;      /* From command-line argument */
-       };
-
-const int num_threads=2;
 
 void jsontest();
 
 //Curl IPFS Client Interface thread
 void CurlIPFSClient(void *args )
 {
-	printf("Starting Crypt Reserve Curl IPFS Client Interface.\n");
+	LogMsg("Starting Crypt Reserve Curl IPFS Client Interface");
     	
-	pQueue =  ConstructQueue(100);
-	CurlThreadData* ctd = (CurlThreadData*)malloc(sizeof(CurlThreadData));
-	ctd->queue = pQueue;
-	ctd->queue->head = malloc(sizeof(NODE));
-	ctd->queue->tail = malloc(sizeof(NODE));
+	QueuePtr =  ConstructQueue(10);
+	CurlThreadDataPtr = (CurlThreadData_t*)malloc(sizeof(CurlThreadData_t));
+	//CurlThreadDataPtr->queue = QueuePtr;
+	//CurlThreadDataPtr->queue->head = malloc(sizeof(NodePtr));
+	//CurlThreadDataPtr->queue->tail = malloc(sizeof(NodePtr));
 
-	printf("StartCurslServer\n");
-	StartCurlServer(ctd);
-	printf("Stopped Curl Server.\n");
+	LogMsg("StartCurslServer");
+	StartCurlServer(CurlThreadDataPtr);
+	LogMsg("Stopped Curl Server.");
 }
 
 
 //Rest API Server thread
 void RestAPIServer(void *pQueue )
 {
-	printf("Starting Rest Server.\n");
+	LogMsg("Starting Rest Server.");
     char *arrArgs[] = {"localhost","5001","peers","GET","/api/v0/bitswap/stat", pQueue};
 	//Initialize the database if non exists.
+	LogMsg("initDB");
 	initDB();
+	LogMsg("StartRestServer");
 	StartRestServer(1,arrArgs);
-	printf("Stopped Rest Server.\n");
+	LogMsg("Stopped Rest Server.");
 }
 
 int main(int argc, const char* argv[] )

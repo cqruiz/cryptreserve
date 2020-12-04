@@ -14,11 +14,11 @@
 #include <ulfius.h>
 #include <jansson.h>
 ////#include "../../include/glewlwyd_resource.h"
-//#include "../../tools/glewlwyd/src/glewlwyd.h"
-//#include "../../include/cryptreservesecureapi.h"
+#include "../../tools/glewlwyd/src/glewlwyd.h"
+#include "../../include/cryptreservesecureapi.h"
 
-#include "glewlwyd.h"
-#include "cryptreservesecureapi.h"
+//#include "glewlwyd.h"
+//#include "cryptreservesecureapi.h"
 
 
 /**

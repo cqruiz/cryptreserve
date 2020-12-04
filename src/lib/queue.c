@@ -1,5 +1,7 @@
-//#include "../../include/queue.h"
-#include "queue.h"
+#include "../../include/queue.h"
+
+struct Queue_t *QueuePtr;
+//struct Node_t *NodePtr;
 
 
 int test_queue()
@@ -30,95 +32,107 @@ int test_queue()
 }
 
 
-Queue *ConstructQueue(int limit) {
+Queue_t * ConstructQueue(int limit) {
+
+    LogMsg("Construct Queue");
     if (limit <= 0) {
         limit = 65535;
     }
-    Queue *queue = (Queue*) malloc(sizeof(Queue)*limit);
-    if (queue == NULL) {
+
+    QueuePtr = (Queue_t*) malloc(sizeof(Queue_t)*limit);
+    if (QueuePtr == NULL) {
         return NULL;
     }
-    queue->limit = limit;
-    queue->size = 0;
-    queue->head = NULL;
-    queue->tail = NULL;
+    QueuePtr->limit = limit;
+    QueuePtr->size = 0;
+    QueuePtr->head = NULL;
+    QueuePtr->tail = NULL;
 
-    return queue;
+    return QueuePtr;
 }
 
-void DestructQueue(Queue *queue) {
-    NODE *pN;
-    while (!isEmpty(queue)) {
-        pN = Dequeue(queue);
+void DestructQueue() {
+   LogMsg("DestructQueue");
+   struct Node_t *NodePtr;
+    while (!isEmpty()) {
+        NodePtr = Dequeue();
 	// free members as well
-        free(pN);
+        free(NodePtr);
     }
-    free(queue);
+    free(QueuePtr);
 }
 
-int Enqueue(Queue *pQueue, NODE *item) {
+int Enqueue(Node_t *item) {
+    LogMsg("Enqueue");
     /* Bad parameter */
-    if ((pQueue == NULL) || (item == NULL)) {
+    if ((QueuePtr == NULL) || (item == NULL)) {
         return FALSE;
     }
     // if(pQueue->limit != 0)
-    if (pQueue->size >= pQueue->limit) {
+    if (QueuePtr->size >= QueuePtr->limit) {
         return FALSE;
     }
     /*the queue is empty*/
     item->prev = NULL;
-    if (pQueue->size == 0) {
-        pQueue->head = item;
-        pQueue->tail = item;
+    if (QueuePtr->size == 0) {
+        QueuePtr->head = item;
+        QueuePtr->tail = item;
 
     } else {
         /*adding item to the end of the queue*/
-        pQueue->tail->prev = item;
-        pQueue->tail = item;
+        QueuePtr->tail->prev = item;
+        QueuePtr->tail = item;
     }
-    pQueue->size++;
-    sem_post(pQueue->newmsg_mutx);
+    QueuePtr->size++;
+    sem_post(QueuePtr->newmsg_mutx);
     return TRUE;
 }
 
-NODE * Dequeue(Queue *pQueue) {
+Node_t * Dequeue() {
+    LogMsg("Dequeue");
     /*the queue is empty or bad param*/
-    NODE *item;
-    if (pQueue == NULL || isEmpty(pQueue))
+    Node_t* item;
+    if (QueuePtr == NULL || isEmpty())
         return NULL;
-    item = pQueue->head;
-    pQueue->head = (pQueue->head)->prev;
-    pQueue->size--;
+    item = QueuePtr->head;
+    QueuePtr->head = (QueuePtr->head)->prev;
+    QueuePtr->size--;
     return item;
 }
 
-int isEmpty(Queue* pQueue) {
-    if (pQueue == NULL) {
+int isEmpty() {
+    if (QueuePtr == NULL) {
+        LogMsg("QueuePtr==NULL");
         return TRUE;
     }
-    if (pQueue->size == 0) {
+    if (QueuePtr->size == 0) {
+        LogMsg("QueueSize==0");
         return TRUE;
     } else {
+        LogMsg("Queue has Data");
         return FALSE;
     }
 }
 
 int queuemain() {
     int i;
-    Queue *pQ = ConstructQueue(7);
-    NODE *pN;
+    struct Node_t *NodePtr;
+    QueuePtr = ConstructQueue(7);
+    
+    LogMsg("Enqueue queue main");
 
-    for (i = 0; i < 9; i++) {
-        pN = (NODE*) malloc(sizeof (NODE));
-        pN->data.number = 100 + i;
-        Enqueue(pQ, pN);
+/*    for (i = 0; i < 9; i++) {
+        NodePtr = (Node_t*) malloc(sizeof (Node_t));
+        NodePtr->data->number = 100 + i;
+        Enqueue(NodePtr);
     }
-
-    while (!isEmpty(pQ)) {
-        pN = Dequeue(pQ);
-        printf("\nDequeued: Name: %s  CID:%s Number:%d", pN->data.name, pN->data.CID, pN->data.number);
-        free(pN);
+*/
+    while (!isEmpty()) {
+        NodePtr = Dequeue();
+        printf("\nDequeued: Name: %s  CID:%s Number:%d", NodePtr->data->name, NodePtr->data->CID, NodePtr->data->number);
+        free(NodePtr);
     }
-    DestructQueue(pQ);
+    printf("Destruct Crypt Reserve Message Queue\n");
+    //DestructQueue();
     return (EXIT_SUCCESS);
 }

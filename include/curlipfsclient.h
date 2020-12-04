@@ -1,9 +1,9 @@
-#ifndef _CURL_IPFS_CLIENT_
-#define _CURL_IPFS_CLIENT_
+#ifndef CURL_IPFS_CLIENT
+#define CURL_IPFS_CLIENT
 
 #include <stdio.h>
 #include <stdio.h>
-//#include <curl/curl.h>
+#include <jansson.h>
 #include "queue.h"
 #include <unistd.h>
 
@@ -12,21 +12,21 @@ struct MemoryStruct {
   size_t size;
 };
 
-typedef struct {
-  Queue* queue;
+typedef struct CurlThreadData_t {
   bool running;
   int port;
   char* path;
   char* url;
   char* protocol;
 
-} CurlThreadData;
+} CurlThreadData_t;
 
-//typedef CurlThreadData curlData;
+//typedef struct CurlThreadData_t *pCurlThreadData;
+extern struct CurlThreadData_t* CurlThreadDataPtr;
 
-int StartCurlServer(CurlThreadData *);
+int StartCurlServer(CurlThreadData_t* );
 void ProcessRequest( void *);
 //static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp);
-void read_callback();
-
+extern void read_callback();
+extern int iPR;
 #endif

@@ -1,6 +1,6 @@
-//#include "../../include/curlipfsclient.h"
-#include "curlipfsclient.h"
-#include "queue.h"
+#include "../../include/curlipfsclient.h"
+//#include "curlipfsclient.h"
+#include "../../include/queue.h"
 #include <pthread.h>
 #include <curl/curl.h>
 
@@ -15,6 +15,11 @@
  //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
+
+
+//int iPR=0;
+struct CurlThreadData_t* CurlThreadDataPtr;
+struct DATA_t *DataPtr;
 
 static size_t
 WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
@@ -37,7 +42,7 @@ WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
   return realsize;
 }
 
-int StartCurlServer(CurlThreadData* pThreadCurlData) 
+int StartCurlServer(CurlThreadData_t *pThreadCurlData) 
 {
 	int result=0;
 	pthread_t processRequestThread;
@@ -51,12 +56,7 @@ int StartCurlServer(CurlThreadData* pThreadCurlData)
   pThreadCurlData->running = true;
 	strncpy(pThreadCurlData->protocol, PROTOCOL, sizeof(pThreadCurlData->protocol)); // = "https";
 
-	//argv[0] = running
-	//argv[1] = *curl;
-	//argv[2] = URL;
-	//argv[3] = *queue; 
-	/* create a Request Listener thread */
-	
+	printf("Start Process Request Thread");
 	if(pthread_create(&processRequestThread, NULL, ProcessRequest, (void *)pThreadCurlData)) 
 	{
 		fprintf(stderr, "Error creating Request Listener thread\n");
@@ -73,39 +73,55 @@ int StartCurlServer(CurlThreadData* pThreadCurlData)
 
 	return result;
 }
-int i=0;
+
 void ProcessRequest(void *argv)
 {
     printf("ProcessRequest\n");
+    int iPR=0;
+
+  printf("CurlThreadDataPtr = (CurlThreadData) argv\n"); 
 
     //Send Curl Requests 
-    CurlThreadData* cth = (CurlThreadData*) argv;
-    Queue *pQ = (Queue*)(cth->queue);
-    NODE *pN;
-    
-    pN = (NODE*) malloc(sizeof (NODE));
-    pN->data.number = 100 + i++;
+    CurlThreadDataPtr = (CurlThreadData_t*) argv;
+    printf("CurlThreadDataPtr->running = true\n"); 
+    CurlThreadDataPtr->running = true;
+    //printf("QueuePtr = (Queue_t*)(CurlThreadDataPtr->queue)\n"); 
+    //QueuePtr = (Queue_t*)(CurlThreadDataPtr->queue);
+   printf("NodePtr = (Node_t*) malloc(sizeof (Node_t)\n"); 
+   struct Node_t *NodePtr;
+    NodePtr = (Node_t*) malloc(sizeof (Node_t));
+
+    DataPtr = (Data_t*) malloc(sizeof (Data_t));
+    NodePtr->data = DataPtr;
+
+    printf("NodePtr->data->number = 100 + iPR++\n"); 
+
+    NodePtr->data->number = 100 + iPR++;
+    //pN->data.number = 100 + i++;
     printf("ProcessRequest-Call Enqueue(pQ,pN)\n");
 //    NODE *tmp = pN->
  //   Enqueue(pQ, pN);   
 
-    while(sleep(1000)  && (bool)(cth->running)==true)  { // || pQ->wait4MsgEvent){
-      printf("Check Request Queued\n"); 
-      while (!isEmpty(pQ)) {
+    printf("Check Request Queued\n"); 
+    while( (bool)(CurlThreadDataPtr->running)==true)  { // || pQ->wait4MsgEvent){
+      sleep(10);
+      printf(".\n");
+      while (!isEmpty()) {
 	      printf("We have Queued Data Incoming...\n"); 
-	      pN = Dequeue(pQ); 
-	      printf("Dequeued: Name: %s  CID:%s Number:%d\n", pN->data.name, pN->data.CID, pN->data.number); 
-	      SendIPFSData(pN->data);
-	      free(pN);
+	      NodePtr = Dequeue(); 
+        printf("Dequeued:\n");
+	      //printf("Dequeued: Name: %s  CID:%s Number:%d\n", NodePtr->data->name, NodePtr->data->CID, NodePtr->data->number); 
+	      SendIPFSData(NodePtr->data);
+	      free(NodePtr);
 	    }
     }
-    printf("DesctructQueue/n");
-    DestructQueue(pQ);
+    printf("DestructQueue\n");
+    DestructQueue();
     return (EXIT_SUCCESS);	
 }
 
 
-void SendIPFSData(DATA *data)
+void SendIPFSData(Data_t *data)
 {
     printf("SendIPFSData\n");
      CURL *curl;
@@ -118,9 +134,9 @@ void SendIPFSData(DATA *data)
 
      curl = curl_easy_init();
 
-     switch((Cmd)data->cmd)
+     switch(data->cmd)
      {
-	case addfile:
+	    case addfile:
  		/* tell it to "upload" to the URL */ 
     		curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
 
@@ -171,7 +187,7 @@ void read_callback()
   printf("CurlIPFSCLient::Read Call back\n");
 }
 
-void GetIPFSData(DATA *data)
+void GetIPFSData(Data_t *data)
 {
   printf("GetIPFSData\n");
   CURL *curl;

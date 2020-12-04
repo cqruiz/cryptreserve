@@ -1,20 +1,14 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <string.h>
-//#include "../../include/dbcache.h"
-#include "dbcache.h"
-int getData(int, char *, pUser);
-int getDataByName(char *, char *, pUser);
-int insertDB(pUser, char *);
-int addToken(pUser, char*);
-static jmp_buf s_jumpBuffer;
-
-int AddUser(pUser args)
+#include "../../include/dbcache.h"
+//#include "dbcache.h"
+int AddUser(const UserPtr args)
 {
 	return insertDB(args, USER_TABLE_NAME);
 }
 
-int AddClient(pClient clientArgs)
+int AddClient(const ClientPtr clientArgs)
 {
 	return insertDB(clientArgs, CLIENT_TABLE_NAME);
 }
@@ -22,19 +16,19 @@ char *AddToken(pUsr)
 {
 	return addToken(pUsr, TOKEN_TABLE_NAME);
 }
-int GetUser(int id, pUser out)
+int GetUser(const int id, UserPtr *out)
 {
 	return getData(id, USER_TABLE_NAME, out);
 }
-int GetUserByName(char *name, pUser out)
+int GetUserByName(const char *name, UserPtr *out)
 {
 	return getDataByName(name, USER_TABLE_NAME, out);
 }
-int GetClientByName(char *name, pClient out)
+int GetClientByName(const char *name, ClientPtr *out)
 {
 	return getDataByName(name, CLIENT_TABLE_NAME, out);
 }
-int GetClient(int id, pClient out)
+int GetClient(const int id, ClientPtr *out)
 {
 	return getData(id, CLIENT_TABLE_NAME, out);
 }
@@ -118,7 +112,7 @@ void initDB()
 int callback(void *, int, char **, char **);
 
 
-int isValidLogin(const char *loginId, char *tableName) {
+int isValidLogin(const char *loginId, const char *tableName) {
 
     sqlite3 *db;
     char *err_msg = 0;
@@ -178,7 +172,7 @@ int callback(void *NotUsed, int argc, char **argv,
 }
 
 
-int getData(int Id, char *tableName, pUser pUsrOut)
+int getData(const int Id, const char *tableName, UserPtr *pUsrOut)
 {
 	sqlite3 *db;
     char *err_msg = 0;
@@ -219,22 +213,25 @@ int getData(int Id, char *tableName, pUser pUsrOut)
        		//printf("%s: ", sqlite3_column_text(res, 0));
         	//printf("%d\n", sqlite3_column_int(res, 0));
 
-		//usr = malloc(sizeof(User));
-		pUsrOut->id = sqlite3_column_int(res, 0);
+		pUsrOut = malloc(sizeof(UserPtr));
+
+		(*pUsrOut)->id = sqlite3_column_int(res, 0);
 		const char *value = (const char*) sqlite3_column_text(res, 1);
 		if(value != NULL) {
-			//pUsrOut->name = malloc(strlen(value)+1);
-			strcpy(pUsrOut->name, value); 
+			(*pUsrOut)->name = malloc(strlen(value)+1);
+			strcpy((*pUsrOut)->name, value); 
 		}
 	       //free value;
+           free(value);
 
 
 		value = (const char*) sqlite3_column_text(res, 2);
 		if(value != NULL) {
-			//usr->password = malloc(strlen(value)+1);
-			strcpy(pUsrOut->password, value);
+			(*pUsrOut)->password = malloc(strlen(value)+1);
+			strcpy((*pUsrOut)->password, value);
 		}
 		// free value again
+        free(value);
 	}
 	else
 		return rc;
@@ -245,7 +242,7 @@ int getData(int Id, char *tableName, pUser pUsrOut)
 	return 0;
 }
 
-int getDataByName(char *name, char *tableName, pUser pUsrOut)
+int getDataByName(const char *name,const  char *tableName, UserPtr *pUsrOut)
 {
 	sqlite3 *db;
     char *err_msg = 0;
@@ -281,24 +278,24 @@ int getDataByName(char *name, char *tableName, pUser pUsrOut)
 	if(sqlite3_step(res) != SQLITE_DONE) 
     {
         //ID
-		pUsrOut->id = sqlite3_column_int(res, 0);
+		(*pUsrOut)->id = sqlite3_column_int(res, 0);
         //Name
     	const char *value = (const char*) sqlite3_column_text(res, 1);
 		if(value != NULL) {
-			pUsrOut->name = (char *)malloc(strlen(value)+1);
-			strcpy(pUsrOut->name, value); 
+			(*pUsrOut)->name = (char *)malloc(strlen(value)+1);
+			strcpy((*pUsrOut)->name, value); 
 		}
 		//Password
 		value = (const char*) sqlite3_column_text(res, 2);
 		if(value != NULL) {
-			pUsrOut->password = malloc(strlen(value)+1);
-			strcpy(pUsrOut->password, value);
+			(*pUsrOut)->password = malloc(strlen(value)+1);
+			strcpy((*pUsrOut)->password, value);
 		}
         //Email
         value = (const char*) sqlite3_column_text(res, 3);
 		if(value != NULL) {
-			pUsrOut->email = malloc(strlen(value)+1);
-			strcpy(pUsrOut->email, value);
+			(*pUsrOut)->email = malloc(strlen(value)+1);
+			strcpy((*pUsrOut)->email, value);
 		}
 	}
 		// free value again
@@ -309,7 +306,7 @@ int getDataByName(char *name, char *tableName, pUser pUsrOut)
 }
 
 
-int insertDB(User *usr, char *tableName)
+int insertDB(const UserPtr usr, char *tableName)
 {
  	sqlite3 *db;
     char *err_msg = 0;
@@ -367,12 +364,12 @@ int insertDB(User *usr, char *tableName)
     int last_id = sqlite3_last_insert_rowid(db);
     printf("The last Id of the inserted row is %d\n", last_id);
 
-    sqlite3_close(db);
+   // sqlite3_close(db);
 
     return SQLITE_OK;
 }
 
-int addToken(pUser pUsr, char * tablename)
+int addToken(const UserPtr pUsr, char * tablename)
 {
  	sqlite3 *db;
     char *err_msg = 0;

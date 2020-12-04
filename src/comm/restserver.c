@@ -33,20 +33,13 @@
 #include <string.h>
 #include <ulfius.h>
 
-/*#include "../../include/restserver.h"
+#include "../../include/restserver.h"
 #include "../../include/jwthelper.h"
 #include "../../include/jsonparser.h"
 #include "../../include/curlipfsclient.h"
 #include "../../include/jwthelper.h"
 #include "../../include/cryptreservesecureapi.h"
-*/
-#include "restserver.h"
-#include "jwthelper.h"
-#include "jsonparser.h"
-#include "curlipfsclient.h"
-#include "jwthelper.h"
-#include "cryptreservesecureapi.h"
-
+#include "../../include/queue.h"
 
 #define PORT 2884
 #define PREFIX "/auth"
@@ -57,7 +50,8 @@
 
 #define USER "test"
 #define PASSWORD "testpassword"
-
+#define ERRLOGFILE "/var/log/cr/cr_error.log"
+#define LOGFILE "/var/log/cr/cr_log.log"
 
     //////////////////////////////////////////////////////////////////////////////
    //                                                                          //
@@ -93,43 +87,62 @@ char * read_file(const char * filename) {
  */
 int callback_create_user_account (const struct _u_request * request, struct _u_response * response, void * user_data) {
 	
-	printf("callback_create_user_account \n");
-	y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_create_user_account");
-
+	LogMsg("callback_create_user_account.");
+	
+	printf("RestServerAPI::callback_create_user_account len=%d, strlen=%d\n", request->binary_body_length, strlen(request->binary_body));
 	// Create a wallet address from a managed ethereum node
 	// create a smart contract for managing this users session token and documents.
 	char *body;
-	char *loginReqData;
-	char reqData[1028];
-	strcpy(reqData, (char *)request->binary_body);
+	//char *loginReqData;
+	char *reqData = calloc(request->binary_body_length*sizeof(char)+1, sizeof(char));
+	strncpy(reqData, (char *)request->binary_body, request->binary_body_length*sizeof(char));
 
-	 loginReqData = malloc(strlen(request->binary_body)*sizeof(char)+1);
-	strcpy(loginReqData,(char *)request->binary_body);
+//	 loginReqData = malloc(strlen(request->binary_body)*sizeof(char)+1);
+//	strncpy(loginReqData,(char *)request->binary_body, strlen(request->binary_body)*sizeof(char));
 
 	printf("Raw body: %s\n", (char *)request->binary_body);
 	printf("Creating user %s Len:%u\n", reqData, (unsigned int) strlen(reqData));
 	y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_create_user_account %s", reqData);
 
-	pUser pusr = malloc(sizeof(User));
-	if ( json_to_user(reqData, pusr) ==0)
+	//UserPtr pusr = malloc(sizeof(UserPtr));
+	struct User *pusr = calloc(1, sizeof(struct User));
+	pusr->name = calloc(3,1); // ed/0
+	sprintf(pusr->name, "ed");
+	pusr->password = calloc(5,1); // 1234/0
+	sprintf(pusr->password, "1234");
+	pusr->email = calloc(9,1); // ed@ed.com/0
+	sprintf(pusr->email, "ed@ed.com");
+	printf("Name: %s\n", pusr->name);
+	printf("Password: %s\n", pusr->password);
+	printf("Email: %s\n", pusr->email);
+	
+
+	//*pusr = (struct User){0};
+	if ( json_to_user(reqData, &pusr) ==0)
 	{
-		printf("json_to_user \n\tname: %s\n\tid: %d\n\tpassword: %s\n\temail: %s\nLen:%u\n",pusr->name,pusr->id,pusr->password,pusr->email, (unsigned int) strlen(reqData));
-		char *response_value = msprintf("CRYPTRESERVE_USER%s", pusr->password);
-        
-    	u_map_put(response->map_header, HEADER_RESPONSE, response_value);    
-		o_free(response_value);
+		printf("json_to_user \n\tname: %s\n\tid: %d\n\tpassword: %s\n\temail: %s\n", //Len:%u\n",
+		pusr->name,pusr->id, pusr->password, pusr->email); //, (unsigned int) strlen(reqData));
+		//char *response_value = msprintf("CRYPTRESERVE_USER%s", pusr->password);
+
+
+    	//u_map_put(response->map_header, HEADER_RESPONSE, response_value);    
+		//o_free(response_value);
 
 //	initDB();
 //	printf("Json Parsed User struct for Name: %s", usr->name);
 		
 
-		pUser pGetUser = (pUser)malloc(sizeof(pUser));
+		UserPtr *pGetUser = (UserPtr*)malloc(sizeof(UserPtr*));
    	
-		if(GetUser(pusr->id, pGetUser)==0) 
+	   LogMsg("GetUser");
+		if(GetUser(pusr->id, &pGetUser)==0) 
 		{
+		//	free(pGetUser);
 		//pGetUser==NULL)
 		//	createsecretapi(pusr->password, response);
+			LogMsg("AddUser");
 			AddUser(pusr);
+
 	
 			char key[128];
 			char val[256];
@@ -140,19 +153,22 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 			
 			ulfius_add_cookie_to_response(response, key, val, NULL, 0, NULL, NULL, 0, 0);
 
-
+			LogMsg("Add Cookie to Response");
 		  	if (ulfius_add_cookie_to_response(response, key, val, expires, 0, NULL, NULL, 0, 0) != U_OK) {
            		y_log_message(Y_LOG_LEVEL_ERROR, "CreateUserLogin - Error adding cookie %s/%s to response", key, val);
            	}
                   //o_free(path);
                     //o_free(expires);
 			body = msprintf(APP_NAME " User succesfully Created for User : %s!", reqData);
+			printf("Body=%s/n", body);
+			LogMsg("body");
 		}
 		else 
 		{
-	
-			body = msprintf( APP_NAME " creation failed, User already exists, try a different id + usr combo %s.", pGetUser->name);
+			LogMsg("msprintf pGetUser Null?");
+			body = msprintf( APP_NAME " creation failed, User already exists, try a different id + usr combo %s.", (*pGetUser)->name);
 		}
+		
 	}
 	else
 	{
@@ -162,12 +178,22 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 	       printf("user: 	\n\tname: %s\n\tid: %d\n\tpassword: %s\n\temail: %s\nLen:%u\n",pusr->name,pusr->id,pusr->password,pusr->email, (unsigned int) strlen(reqData));
 	}
 
+	LogMsg("_set_string_body_response"); 
 	ulfius_set_string_body_response(response, 200, body);
 
-  	free(pusr);
+	LogMsg("Done..."); 
+	
+  	u_map_put(response->map_header, "Name", pusr->name);
 
-  	//u_map_put(response->map_header, "newusr", "1234");
-  	return U_CALLBACK_CONTINUE;
+
+	free((char*)pusr->name);
+	free((char*)pusr->password);
+	free((char*)pusr->email);
+	free(pusr);
+	free(body);
+	free(reqData);
+	
+  	return U_CALLBACK_COMPLETE;
 }
     
 /**
@@ -178,7 +204,7 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 		y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_login");
 		if (request->auth_basic_user != NULL && request->auth_basic_password != NULL)
 		{
-			pUser pUsr = (pUser)malloc(sizeof(User));
+			UserPtr pUsr = (UserPtr)malloc(sizeof(UserPtr));
 			pUsr->email =  malloc(1);
 			sprintf(pUsr->email,"%s","");
 			if( GetUserByName(request->auth_basic_user, pUsr) == 0)
@@ -194,7 +220,8 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 				{
 					char *body;
 					char usrjson[512];
-					user_to_json(pUsr, usrjson);
+					//user_to_json(pUsr, usrjson);
+					//int x = user_to_json();
 					//Add a token to the db associarted to this user
 					char *token = CreateJWT( usrjson, pUsr->password);
 					char *response_value = msprintf(CRYPTRESERVE_USER ":%s", token);
@@ -272,8 +299,8 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
     	printf("Creating issuer %s\n", reqData);
     	y_log_message(Y_LOG_LEVEL_DEBUG, "callback_create_issueruser %s", reqData);
 
-    	pUser pusr = malloc(sizeof(User));
-    	json_to_user(reqData, pusr);
+    	UserPtr pusr = malloc(sizeof(UserPtr));
+    	//int z= json_to_user(reqData, pusr);
 
     	char *response_value = msprintf(HEADER_PREFIX_BEARER " <%s>", pusr->password);
 
@@ -281,7 +308,7 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
     	o_free(response_value);
 
     	char *body;
-    	User *pGetUser = (pUser)malloc(sizeof(pUser)); 
+    	UserPtr pGetUser = (UserPtr)malloc(sizeof(UserPtr)); 
 		GetUser(pusr->id, pGetUser);
     	if(pGetUser==NULL)
     	{
@@ -291,14 +318,16 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
         	body = msprintf("Passport User succesfully Created for User : %s!", reqData);
     	}
     	else
-        	body = msprintf("Passport creation failed, try a different id + usr combo %s.", pGetUser->name);
+        	{
+				body = msprintf("Passport creation failed, try a different id + usr combo %s.", pGetUser->name);
+			}
 
     	ulfius_set_string_body_response(response, 200, body);
 
     	free(pusr);
     	free(pGetUser);
     	//u_map_put(response->map_header, "newusr", "1234");
-    	return U_CALLBACK_CONTINUE;
+    	return U_CALLBACK_COMPLETE;
     }  
 
 	int callback_user_logon(const struct _u_request * request, struct _u_response * response, void * user_data) {
@@ -310,10 +339,11 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 	int callback_client_logon(const struct _u_request * request, struct _u_response * response, void * user_data) {
 
 		printf("callback_client_logon \n");
-		y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_client_logon");
+		LogMsg("RestServerAPI::callback_client_logon");
+		//y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_client_logon");
 		if (request->auth_basic_user != NULL && request->auth_basic_password != NULL)
 		{
-			pUser pUsr = (pUser)malloc(sizeof(User));
+			UserPtr pUsr = (UserPtr)malloc(sizeof(UserPtr));
 			if( GetUserByName(request->auth_basic_user, pUsr) == 0)
 			{
 				//int cmpusr = o_strcmp(request->auth_basic_user, pUsr->name);
@@ -323,7 +353,8 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 				//int cmppwd = o_strcmp(request->auth_basic_password, pUsr->password);
 
 				char usrjson[512];
-				user_to_json(pUsr, usrjson);
+				//user_to_json(pUsr, usrjson);
+				//int y = user_to_json();
 				//Add a token to the db associarted to this user
 				char *token = CreateJWT( usrjson, pUsr->password);
 				char *response_value = msprintf(CRYPTRESERVE_USER ":%s", token);
@@ -331,6 +362,8 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
     			u_map_put(response->map_header, HEADER_RESPONSE, response_value);    
 				o_free(response_value);
 		
+				LogMsg( "RestServerAPI::callback_user_logon Successfull Logon!");
+				LogMsg(pUsr->name);
 				y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_logon Successfull Logon: %s!", pUsr->name);
 				
 				return U_CALLBACK_CONTINUE;
@@ -406,13 +439,16 @@ int file_upload_callback (const struct _u_request * request,
   //incoming
   // 1. get the data and allocate *pData and cache to a file
   // 2. Create and Queue up the New Node
-  
-  CurlThreadData* cth = (CurlThreadData*) cls;
-    Queue *pQ = (Queue*)(cth->queue);
-    NODE *pN;
+  //struct QueuePtr* pQ=NULL;
+  //CurlThreadDataPtr CTDPtr;
+  struct Node_t* NodePtr;
+  //struct Queue_t* QueuePtr;
+	static int iPR=0;
+  CurlThreadDataPtr = (CurlThreadData_t*) cls;
+    //QueuePtr = (Queue_t*)(CurlThreadDataPtr->queue);
 
-    pN = (NODE*) malloc(sizeof (NODE));
-    pN->data.number = 100 + i++;
+    NodePtr = (Node_t*) malloc(sizeof (NodePtr));
+	//NodePtr->data->number = 100 + iPR++;
     //Write to file
     //
     printf("\nProcessRequest-Call Enqueue(pQ,pN)\n");
@@ -550,40 +586,48 @@ void createsecretapi(char *cid, struct _u_response * response)
 */
 #endif
 
+void LogMsg(char *msg){
+	y_log_message(Y_LOG_LEVEL_INFO, msg);
+	printf("%s\n",msg);
+}
+void ErrMsg(char * msg){
+	y_log_message(Y_LOG_LEVEL_ERROR, "s", msg);
+}
+
 int StartRestServer(int argc, char **argv) {
   	// Initialize the instance
   	struct _u_instance instance;
     
-	printf("***************************\n");
-  	printf("* Start CryptReserve Node *\n");
-   	printf("***************************\n");
-  	y_init_logs("auth_server", Y_LOG_MODE_CONSOLE, Y_LOG_LEVEL_DEBUG, NULL, "***************************");
-  	y_init_logs("auth_server", Y_LOG_MODE_CONSOLE, Y_LOG_LEVEL_DEBUG, NULL, "* Start CryptReserve Node *");
-  	y_init_logs("auth_server", Y_LOG_MODE_CONSOLE, Y_LOG_LEVEL_DEBUG, NULL, "***************************");
+	y_init_logs("CryptReserve", Y_LOG_MODE_FILE, Y_LOG_LEVEL_INFO, LOGFILE, "Initializing CryptReserve Log File.");
+  	LogMsg("***************************");
+  	LogMsg("* Start CryptReserve Node *");
+  	LogMsg("***************************");
  
  	int retUlf = ulfius_init_instance(&instance, PORT, NULL, "auth_basic_default");
 
   	//if (ulfius_init_instance(&instance, PORT, NULL, "auth_basic_default") != U_OK) {
 	if (retUlf != U_OK) {
     		printf("Error CryptReserve ulfius_init_instance, abort\n");
+			LogMsg("Error CryptReserve ulfius_init_instance, abort\n");
     		return(1);
   	}
   
 	//User API
 	//ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createuseraccount", 0, &callback_create_user_account, argv);
-	ulfius_add_endpoint_by_val(&instance, "POST", PREFIX, "/createuseraccount", 0, &callback_create_user_account, argv);
-	printf("*Endpoint: Added POST createuseraccount with callback_create_user_account \n");
+	ulfius_add_endpoint_by_val(&instance, "POST", PREFIX, "/createuseraccount", 0, &callback_create_user_account, NULL);
+	LogMsg("*Endpoint: Added POST createuseraccount with callback_create_user_account \n");
 
 
   	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/userlogin", 0, &callback_user_login, NULL);
-	printf("*Endpoint: Added GET userlogin with callback_user_login \n");
+	LogMsg("*Endpoint: Added GET userlogin with callback_user_login \n");
 
 	//Client API
 	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createclientaccount", 0, &callback_create_client_account, argv);
-	printf("*Endpoint: Added GET createclientaccount with callback_create_client_account \n");
+	LogMsg("*Endpoint: Added GET createclientaccount with callback_create_client_account \n");
 
   	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/clientlogin", 0, &callback_client_logon, argv);
-	printf("*Endpoint: Added GET clientlogin with callback_user_login \n");
+	//printf("*Endpoint: Added GET clientlogin with callback_user_login \n");
+	LogMsg("*Endpoint: Added GET clientlogin with callback_user_login \n");
 
   	
 	//Create New Endpoint:
@@ -635,6 +679,7 @@ int StartRestServer(int argc, char **argv) {
       		// Wait for the user to press <enter> on the console to quit the application
       		printf("Press <enter> to quit server\n");
       		getchar();
+			  CurlThreadDataPtr->running=false;
     	} else {
       		printf("Error starting secure framework\n");
     	}
@@ -648,6 +693,8 @@ int StartRestServer(int argc, char **argv) {
     	// Wait for the user to press <enter> on the console to quit the application
     	printf("Press <enter> to quit server\n");
     	getchar();
+		printf("Stopping the CryptReserve Server...\n");
+		CurlThreadDataPtr->running=false;
 #ifndef U_DISABLE_GNUTLS
   	} else {
     	printf("Error starting framework\n");
@@ -655,7 +702,7 @@ int StartRestServer(int argc, char **argv) {
 #endif
 
 	u_map_clean(&mime_types);
-  	printf("End framework\n");
+  	LogMsg("End framework\n");
   	ulfius_stop_framework(&instance);
   	ulfius_clean_instance(&instance);
   	y_close_logs();

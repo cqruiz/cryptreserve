@@ -19,8 +19,8 @@
 
 #endif
 
-void error(const char *msg);
+extern void error(const char *msg);
 
-int RestAPI(int argc,char *argv[]);
+extern int RestAPI(int argc,char *argv[]);
 
 #endif

@@ -2,7 +2,8 @@
 #define DBCACHE_H
 #include <stdio.h>
 #include <sqlite3.h>
-
+#include <setjmp.h>
+#include <stdlib.h>
 #define ID_SIZE 64
 #define NAME_SIZE 64
 #define PASSWORD_SIZE 128
@@ -23,8 +24,9 @@ struct User{
 	char *email;
 };
  
-typedef struct User* pUser;
-typedef struct User User;
+typedef struct User *UserPtr;
+//extern struct User* UserPtr;
+
 
 struct Client{
 	char *name;
@@ -33,15 +35,25 @@ struct Client{
 	char *email;
 };
  
-typedef struct Client* pClient;
+typedef struct Client* ClientPtr;
+//extern struct Client* ClientPtr; 
 
-int AddUser(pUser args);
-int GetUser(int, pUser);
-int GetUserByName(char *, pUser);
-int AddClient(pClient args);
-int GetClient(int, pClient);
-int GetClientByName(char *, pClient);
-void initDB();
+extern int AddUser(const UserPtr args);
+extern int GetUser(const int, UserPtr*);
+extern int GetUserByName(const char *, UserPtr*);
+extern int AddClient(const ClientPtr args);
+extern int GetClient(const int, ClientPtr*);
+extern int GetClientByName(const char *, ClientPtr*);
+extern void initDB();
+
+/*
+extern int getData(int, char *, UserPtr);
+extern int getDataByName(char *, char *, UserPtr);
+extern int insertDB(UserPtr, char *);
+extern int addToken(UserPtr, char*);
+*/
+
+static jmp_buf s_jumpBuffer;
 
 #endif
 
