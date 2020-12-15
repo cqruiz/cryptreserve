@@ -155,9 +155,6 @@ int ParseJsonVal(const char *Key, char **RetVal, const char *jsonSrc)
 
 	if (json == NULL)
 	{
-	//	y_log_message(Y_LOG_LEVEL_INFO, "CreateUserLogin - \n\tk=%s \n\tvalue=%s", key, val);
-	//  LOG_PRINT(LOGLEVEL_ERROR, "Loading json string failed: %s - %s; pos=%u\n",
-	  //                           error.text, error.source, error.position);
 		printf("Loading json string failed: %s - %s; pos=%u\n",
 	    		error.text, error.source, error.position);
 	  return 1;
@@ -176,12 +173,9 @@ int ParseJsonVal(const char *Key, char **RetVal, const char *jsonSrc)
 	  return 1;
 	}
 	
-	char *ResultMemoryValue = (char *)malloc((strlen(strval) + 1) * sizeof(char));
-	printf("malloced ResultMemoryValue address= %ul\n", &ResultMemoryValue);
-	strcpy(ResultMemoryValue, strval);
-	RetVal=&ResultMemoryValue;
+	strcpy(*RetVal, strval);
 	
-	printf("RetVal = %s/n", RetVal);
+	printf("RetVal = %s\n", RetVal);
 	//json_decref(json);
 	json_decref(jsonobj);
 

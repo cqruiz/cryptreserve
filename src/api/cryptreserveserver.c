@@ -38,12 +38,12 @@ void CurlIPFSClient(void *args )
 void RestAPIServer(void *pQueue )
 {
 	LogMsg("Starting Rest Server.");
-    char *arrArgs[] = {"localhost","5001","peers","GET","/api/v0/bitswap/stat", pQueue};
+  //  char *arrArgs[] = {"localhost","5001","peers","GET","/api/v0/bitswap/stat", pQueue};
 	//Initialize the database if non exists.
 	LogMsg("initDB");
 	initDB();
 	LogMsg("StartRestServer");
-	StartRestServer(1,arrArgs);
+	StartRestServer();
 	LogMsg("Stopped Rest Server.");
 }
 
@@ -120,6 +120,8 @@ int main(int argc, const char* argv[] )
 
 	for (int tnum=0; tnum<=num_threads; tnum++)
 	{
+		printf("Thread Number: %d\t\tId: %lu",tnum, tinfo[tnum].thread_id);
+
 		s = pthread_join(tinfo[tnum].thread_id, &res);
 		if (s != 0)
 		{

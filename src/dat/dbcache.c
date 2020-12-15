@@ -2,7 +2,7 @@
 #include <setjmp.h>
 #include <string.h>
 #include "../../include/dbcache.h"
-//#include "dbcache.h"
+
 int AddUser(const UserPtr args)
 {
 	return insertDB(args, USER_TABLE_NAME);
@@ -48,7 +48,7 @@ void initDB()
     }
 
 	//User Table
-    char sql[512] = "CREATE TABLE " USER_TABLE_NAME "(" ID_COL_NAME " INTEGER AUTO_INCREMENT PRIMARY KEY, " NAME_COL_NAME " TEXT, " PWD_COL_NAME " TEXT);";
+    char sql[1024] = "CREATE TABLE " USER_TABLE_NAME "(" ID_COL_NAME " INTEGER AUTO_INCREMENT PRIMARY KEY, " CID_COL_NAME " TEXT, " NAME_COL_NAME " TEXT, " PWD_COL_NAME " TEXT, " EMAIL_COL_NAME " TEXT)";
 	if(setjmp(s_jumpBuffer))
 	{
 		printf("Exception creating table %s\n", USER_TABLE_NAME);
@@ -66,11 +66,11 @@ void initDB()
    	 	}
 	}
 
-    sprintf(sql, "INSERT INTO " USER_TABLE_NAME "( "NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('Tom','1234','tom@mailinator.com') ;"
-    	"INSERT INTO " USER_TABLE_NAME "( " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('Rebecca','1234','rebecca@mailinator.com');"
-    	"INSERT INTO " USER_TABLE_NAME "( " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('Jim','1234','jim@mailinator.com');"
-    	"INSERT INTO " USER_TABLE_NAME "( " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('Roger','1234','roger@mailinator.com');"
-    	"INSERT INTO " USER_TABLE_NAME "( " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('Robert','1234','robert@mailinator.com');");
+    sprintf(sql, "INSERT INTO " USER_TABLE_NAME "( "CID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('XMCMissingID1','Tom','1234','tom@mailinator.com') ;"
+    	"INSERT INTO " USER_TABLE_NAME "( "CID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('XMCMissingID2','Rebecca','1234','rebecca@mailinator.com');"
+    	"INSERT INTO " USER_TABLE_NAME "( "CID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('XMCMissingID3','Jim','1234','jim@mailinator.com');"
+    	"INSERT INTO " USER_TABLE_NAME "( "CID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('XMCMissingID4','Roger','1234','roger@mailinator.com');"
+    	"INSERT INTO " USER_TABLE_NAME "( "CID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES ('XMCMissingID5','Robert','1234','robert@mailinator.com');");
         
     
     rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
@@ -87,7 +87,7 @@ void initDB()
     printf("The last Id of the inserted user row is %d\n", last_id);
 
 	//Issuer Table
-	sprintf(sql, "CREATE TABLE " CLIENT_TABLE_NAME " (" ID_COL_NAME " INTEGER AUTO_INCREMENT PRIMARY KEY, " NAME_COL_NAME " TEXT, " PWD_COL_NAME " TEXT, " EMAIL_COL_NAME " TEXT); INSERT INTO " CLIENT_TABLE_NAME " ( " ID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES (1,'MGM','1234','MGM@mailinator.com');");
+	sprintf(sql, "CREATE TABLE " CLIENT_TABLE_NAME " (" ID_COL_NAME " INTEGER AUTO_INCREMENT PRIMARY KEY, " CID_COL_NAME " TEXT, " NAME_COL_NAME " TEXT, " PWD_COL_NAME " TEXT, " EMAIL_COL_NAME " TEXT); INSERT INTO " CLIENT_TABLE_NAME " ( " ID_COL_NAME ", " CID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ") VALUES (1, 'XMCUNKNOWNCID1', 'MGM','1234','MGM@mailinator.com');");
     
     rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
     
@@ -114,6 +114,7 @@ int callback(void *, int, char **, char **);
 
 int isValidLogin(const char *loginId, const char *tableName) {
 
+    LogMsg("isValidLogin");
     sqlite3 *db;
     char *err_msg = 0;
 
@@ -128,11 +129,9 @@ int isValidLogin(const char *loginId, const char *tableName) {
         return 1;
     }
 
-    char sqlb[64];;
-    char sql[64] = "0";
-   
+    char sql[128];
+  
    	sprintf(sql, "SELECT * FROM %s where " ID_COL_NAME " = %s", tableName, loginId);
-//    snprintf(sql, sizeof(sqlb), "%s", sqlb);
 
     printf("isValid LoginID sql: %s", sql);
 
@@ -142,7 +141,7 @@ int isValidLogin(const char *loginId, const char *tableName) {
 
     if (rc != SQLITE_OK ) {
 
-        fprintf(stderr, "Failed to fine user\n");
+        fprintf(stderr, "Failed to find user\n");
         fprintf(stderr, "SQL error: %s\n", err_msg);
 
         sqlite3_free(err_msg);
@@ -178,6 +177,8 @@ int getData(const int Id, const char *tableName, UserPtr *pUsrOut)
     char *err_msg = 0;
 	sqlite3_stmt *res;
 
+    LogMsg("getData");
+
     int rc = sqlite3_open(DBNAME, &db);
 
     if (rc != SQLITE_OK) {
@@ -190,7 +191,7 @@ int getData(const int Id, const char *tableName, UserPtr *pUsrOut)
 
     char sql[256];
 		   
-	sprintf(sql, "SELECT " ID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", "  EMAIL_COL_NAME " FROM %s WHERE " ID_COL_NAME " = @id", tableName);
+	sprintf(sql, "SELECT " ID_COL_NAME ", " CID_COL_NAME ", " NAME_COL_NAME ", " PWD_COL_NAME ", "  EMAIL_COL_NAME " FROM %s WHERE " ID_COL_NAME " = @id", tableName);
 
 	printf("%s\n", sql);
 
@@ -215,21 +216,41 @@ int getData(const int Id, const char *tableName, UserPtr *pUsrOut)
 
 		pUsrOut = malloc(sizeof(UserPtr));
 
+        //ID
 		(*pUsrOut)->id = sqlite3_column_int(res, 0);
+        
+        //CID
 		const char *value = (const char*) sqlite3_column_text(res, 1);
-		if(value != NULL) {
+		if(value != NULL && strlen(value)< MAXFIELDSIZE) {
+			(*pUsrOut)->cid = malloc(strlen(value)+1);
+			strncpy((*pUsrOut)->name, value, MAXFIELDSIZE); 
+		}
+        free(value);
+        
+        //Name
+        value = (const char*) sqlite3_column_text(res, 2);
+		if(value != NULL && strlen(value)< MAXFIELDSIZE) {
 			(*pUsrOut)->name = malloc(strlen(value)+1);
-			strcpy((*pUsrOut)->name, value); 
+			strncpy((*pUsrOut)->name, value, MAXFIELDSIZE);
 		}
-	       //free value;
-           free(value);
-
-
-		value = (const char*) sqlite3_column_text(res, 2);
-		if(value != NULL) {
+        free(value);
+        
+        //Password
+		value = (const char*) sqlite3_column_text(res, 3);
+		if(value != NULL && strlen(value)< MAXFIELDSIZE) {
 			(*pUsrOut)->password = malloc(strlen(value)+1);
-			strcpy((*pUsrOut)->password, value);
+			strncpy((*pUsrOut)->password, value, MAXFIELDSIZE);
 		}
+		// free value again
+        free(value);
+
+		value = (const char*) sqlite3_column_text(res, 3);
+		if(value != NULL && strlen(value)< MAXFIELDSIZE) {
+			(*pUsrOut)->email = malloc(strlen(value)+1);
+			strncpy((*pUsrOut)->email, value, MAXFIELDSIZE);
+		}
+        else
+            (*pUsrOut)->email = calloc(1,1);
 		// free value again
         free(value);
 	}
@@ -279,26 +300,40 @@ int getDataByName(const char *name,const  char *tableName, UserPtr *pUsrOut)
     {
         //ID
 		(*pUsrOut)->id = sqlite3_column_int(res, 0);
+        
+        //CID
+        const char *value = (const char*) sqlite3_column_text(res, 1);
+		if(value != NULL && strlen(value)< MAXFIELDSIZE) {
+			(*pUsrOut)->cid = (char *)malloc(strlen(value)+1);
+			strncpy((*pUsrOut)->cid, value, sizeof((*pUsrOut)->cid)); 
+		}
+        free(value);
+
         //Name
-    	const char *value = (const char*) sqlite3_column_text(res, 1);
-		if(value != NULL) {
+    	value = (const char*) sqlite3_column_text(res, 2);
+		if(value != NULL && strlen(value)< MAXFIELDSIZE) {
 			(*pUsrOut)->name = (char *)malloc(strlen(value)+1);
-			strcpy((*pUsrOut)->name, value); 
+			strncpy((*pUsrOut)->name, value, MAXFIELDSIZE); 
 		}
+        free(value);
+
 		//Password
-		value = (const char*) sqlite3_column_text(res, 2);
-		if(value != NULL) {
+		value = (const char*) sqlite3_column_text(res, 3);
+		if(value != NULL && strlen(value)< MAXFIELDSIZE) {
 			(*pUsrOut)->password = malloc(strlen(value)+1);
-			strcpy((*pUsrOut)->password, value);
+			strncpy((*pUsrOut)->password, value, MAXFIELDSIZE);
 		}
+        free(value);
+
         //Email
-        value = (const char*) sqlite3_column_text(res, 3);
-		if(value != NULL) {
+        value = (const char*) sqlite3_column_text(res, 4);
+		if(value != NULL && strlen(value)< MAXFIELDSIZE) {
 			(*pUsrOut)->email = malloc(strlen(value)+1);
-			strcpy((*pUsrOut)->email, value);
+			strncpy((*pUsrOut)->email, value, MAXFIELDSIZE);
 		}
+        free(value);
 	}
-		// free value again
+	// free value again
 	sqlite3_finalize(res);
 	sqlite3_close(db);
 
@@ -321,17 +356,17 @@ int insertDB(const UserPtr usr, char *tableName)
         return 1;
     }
 
-    char sql[128];
-	sprintf(sql, "INSERT INTO %s (" NAME_COL_NAME ", " PWD_COL_NAME ", " EMAIL_COL_NAME ")  VALUES (", tableName);
+    char sql[512];
+	sprintf(sql, "INSERT INTO %s (" CID_COL_NAME ", " NAME_COL_NAME ", " 
+                        PWD_COL_NAME ", " EMAIL_COL_NAME ")  VALUES (", tableName);
  
-    /*//id
-    char sId[1024];
-    sprintf(sId,"%d", usr->id);
-    strcat(sql, sId);
-    strcat(sql,",'");*/
+    //cid
+    char sCID[128];
+    sprintf(sCID,"'%s'", usr->cid);
+    strcat(sql, sCID);
+    strcat(sql,",'");
 
     //name
-    strcat(sql, "'");
     strcat(sql, usr->name);
     strcat(sql,"','");
 
@@ -358,13 +393,13 @@ int insertDB(const UserPtr usr, char *tableName)
 
 		return retErr;
 
-    } else
-        fprintf(stdout, "Table %s Friends created successfully\n", tableName);
+    } else{
+        int last_id = sqlite3_last_insert_rowid(db);
+        fprintf(stdout, "User Inserted id=%d: \n\t%s\n", last_id, sql);
+    }
 
-    int last_id = sqlite3_last_insert_rowid(db);
-    printf("The last Id of the inserted row is %d\n", last_id);
 
-   // sqlite3_close(db);
+    sqlite3_close(db);
 
     return SQLITE_OK;
 }
@@ -384,7 +419,7 @@ int addToken(const UserPtr pUsr, char * tablename)
         return 1;
     }
 
-    char sql[128];
+    char sql[256];
 	sprintf(sql, "INSERT INTO %s (" TOK_COL_NAME ", " NAME_COL_NAME ")  VALUES (", tablename);
  
     //token
@@ -392,6 +427,12 @@ int addToken(const UserPtr pUsr, char * tablename)
   //  sprintf(sId,"%d", pUsr->id);
     //strcat(sql, sId);
     //strcat(sql,",'");
+
+    //token
+    char sCID[1024];
+    sprintf(sCID,"'%s'", pUsr->cid);
+    strcat(sql, sCID);
+    strcat(sql,",'");
 
     //name
     strcat(sql, "'");

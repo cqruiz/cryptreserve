@@ -3,11 +3,15 @@
 #include "../../include/queue.h"
 #include <pthread.h>
 #include <curl/curl.h>
+#include <sys/stat.h>
 
-#define PATH "/api/v1"
-#define PORT 5000
+#define ADD "/add"
+#define PATH "/api/v0"
+#define PORT 5001
 #define URL "localhost"
-#define PROTOCOL "https"
+#define PROTOCOL "http"
+#define STRINGIFY(x) #x
+#define ADDHOSTURL(A,B,C,D, E) STRINGIFY(A) "://" STRINGIFY(B) STRINGIFY(C) ":" STRINGIFY(D) STRINGIFY(E)
 
     //////////////////////////////////////////////////////////////////////////////
    //                                                                          //
@@ -47,7 +51,7 @@ int StartCurlServer(CurlThreadData_t *pThreadCurlData)
 	int result=0;
 	pthread_t processRequestThread;
 	
-	pThreadCurlData->port = 5000;
+	pThreadCurlData->port = PORT;
 	pThreadCurlData->path = (char*)malloc(sizeof(char*)*strlen(PATH))+1; 
 	strncpy(pThreadCurlData->path, PATH, sizeof(pThreadCurlData->path) -1);
 	pThreadCurlData->url = (char*)malloc(sizeof(char*)*strlen(URL))+1;  //"localhost";
@@ -109,9 +113,9 @@ void ProcessRequest(void *argv)
       while (!isEmpty()) {
 	      printf("We have Queued Data Incoming...\n"); 
 	      NodePtr = Dequeue(); 
-        printf("Dequeued:\n");
+        printf("Dequeued Name:\t%s\n", NodePtr->data->name);
 	      //printf("Dequeued: Name: %s  CID:%s Number:%d\n", NodePtr->data->name, NodePtr->data->CID, NodePtr->data->number); 
-	      SendIPFSData(NodePtr->data);
+	      SendIPFSData(&NodePtr->data);
 	      free(NodePtr);
 	    }
     }
@@ -120,92 +124,118 @@ void ProcessRequest(void *argv)
     return (EXIT_SUCCESS);	
 }
 
-
-void SendIPFSData(Data_t *data)
+size_t RetCIDVal(void *buffer, size_t size, size_t nitems, void *pdt)
 {
-    printf("SendIPFSData\n");
-     CURL *curl;
-     struct MemoryStruct chunk;
- 
-     chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */ 
-     chunk.size = 0;    /* no data at this point */ 
+  printf("RetCIDVal\n");
+  printf("CurlIPFSCLient::RetCIDVal Call back \n\tsize=%ld\n\titems=%ld\n", size, nitems);
 
-     int result;
+  //check buffer size to prevent memory overruns - MAXBUFFSIZE
 
-     curl = curl_easy_init();
+  int retval=0;
+  printf("ParseJsonVal\n");
+  char *CID = calloc(strlen(buffer), 1);
+  retval = ParseJsonVal("Name", &CID, (char*)buffer);
+  if (retval==0)
+  {
+    strncpy(((Data_t*)(pdt))->CID, CID, sizeof(((Data_t*)(pdt))->CID)-1);
+    free(CID);
+    retval=strlen(CID);
+  }
+  return retval;
+}
+void SendIPFSData(struct Data_t **data)
+{
+  printf("SendIPFSData Name:%s\t\n", (*data)->name);
 
-     switch(data->cmd)
-     {
-	    case addfile:
- 		/* tell it to "upload" to the URL */ 
-    		curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-
-		/* set where to read from (on Windows you need to use READFUNCTION too) */ 
-    //		curl_easy_setopt(curl, CURLOPT_READDATA, data->fpDatafd);
-
-    		/* and give the size of the upload (optional) */ 
-    //		curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE,
-       //              		 (curl_off_t)file_info.st_size);
-
-		break;
-	case uploadfile:
-		/* we want to use our own read function */
-  		curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
- 
-  		/* enable uploading */
-  		curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
- 
-  		/* specify target */
-  		curl_easy_setopt(curl, CURLOPT_URL, "ftp://example.com/dir/to/newfile");
- 
-  		/* now specify which pointer to pass to our callback */
-//  		curl_easy_setopt(curl, CURLOPT_READDATA, hd_src);
- 
-  		/* Set the size of the file to upload */
-//  		curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)fsize);
+  switch((*data)->cmd)
+  {
+    case createprofile:
+      IPFSFileUpload(data);
+      break;
+    case addfile:
+      break;
+    case uploadfile:
  		break;
 
-	case getfile:
-     		curl_easy_setopt(curl, CURLOPT_URL, data->name);
-		break;
-	default:
-		break;
-     }
-
-     //curl_easy_setup(curl, CURLOPT_WRITEDATA, data->name);
-     curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
-     result =  curl_easy_perform(curl);
-     if (result  == CURLE_OK)
-	printf("Download Successful!/n");
-     else
-        printf("ERROR: %ls\n", &result);
-
+    case getfile:
+      break;
+    default:
+      break;
+      
+  }
 }
 
-void read_callback()
+int IPFSFileUpload(struct Data_t **pdt)
 {
-  printf("CurlIPFSCLient::Read Call back\n");
-}
-
-void GetIPFSData(Data_t *data)
-{
-  printf("GetIPFSData\n");
+  LogMsg("IPFS File Upload\n");
+  //LogMsg("IPFS File Upload: %s\n", (*dt)->name);
+  //struct Data_t *dt = &pdt;
+  CURLcode ret;
   CURL *curl;
-  struct MemoryStruct chunk;
+  curl_mime *mime1;
+  curl_mimepart *part1;
+  (*pdt)->fpData = fopen((*pdt)->pathfile, "rb");
 
-  chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */ 
-  chunk.size = 0;    /* no data at this point */ 
-
-  int result;
+  mime1 = NULL;
 
   curl = curl_easy_init();
+  curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, (*pdt)->filesize);
+  
+  if ((*pdt)->cmd == pinfile)
+    curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:5001/api/v0/add?pin=true");
+  else if ((*pdt)->cmd == addfile)
+    curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:5001/api/v0/add");
 
-  curl_easy_setopt(curl, CURLOPT_URL, data->addr);
-  //curl_easy_setup(curl, CURLOPT_WRITEDATA, fp);
-  curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
-  result =  curl_easy_perform(curl);
-  if (result  == CURLE_OK)
-    printf("Download Successful!/n");
-  else
-    printf("ERROR: %ls\n", &result);
+  curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
+  mime1 = curl_mime_init(curl);
+  part1 = curl_mime_addpart(mime1);
+  curl_mime_data(part1, (*pdt)->pathfile, CURL_ZERO_TERMINATED);
+  curl_mime_name(part1, "file");
+  curl_easy_setopt(curl, CURLOPT_MIMEPOST, mime1);
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, "curl/7.68.0");
+  curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 50L);
+  curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
+  curl_easy_setopt(curl, CURLOPT_SSH_KNOWNHOSTS, "/home/ed/.ssh/known_hosts");
+  curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, RetCIDVal );
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, *pdt);
+  curl_easy_setopt(curl, CURLOPT_READFUNCTION, AddFileCB );
+  curl_easy_setopt(curl, CURLOPT_READDATA, (*pdt)->fpData );
+
+  LogMsg("Run Curl Command - IPFSFileUpload");
+  ret = curl_easy_perform(curl);
+
+  curl_easy_cleanup(curl);
+  curl = NULL;
+  curl_mime_free(mime1);
+  mime1 = NULL;
+
+  return (int)ret;
+}
+
+
+size_t AddFileCB(char *buffer, size_t size, size_t nitems, void *userdata)
+{
+  printf("AddFileCB\n");
+  printf("CurlIPFSCLient::AddFileCB Call back \n\tsize=%ld\n\titems=%ld\n", size, nitems);
+
+  FILE *readhere = (FILE *)userdata;
+  curl_off_t nread;
+ 
+  /* copy as much data as possible into the 'ptr' buffer, but no more than
+     'size' * 'nmemb' bytes! */
+  size_t retcode = fread(buffer, size, nitems, readhere);
+ 
+  nread = (curl_off_t)retcode;
+ 
+  fprintf(stderr, "*** We read %" CURL_FORMAT_CURL_OFF_T
+          " bytes of %d.\n", nread, size);
+
+  if (retcode == size)
+  {
+    LogMsg("Closing File hanlde.\n");
+    fclose(readhere);
+  }
+
+  return retcode;
 }

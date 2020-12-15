@@ -1,7 +1,9 @@
 {
     "files.associations": {
         "curlipfsclient.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "random": "c",
+        "thread": "c"
     },
     "cmake.configureOnOpen": true,
     "compile-hero.disable-compile-files-on-did-save-code": false

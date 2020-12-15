@@ -5,7 +5,7 @@
  * Public API's
  *  - CreateLogin
  *
- * Copyright 2019 CryptReserve Ed Vergara <vergara_ed@yahoo.com>
+ * Copyright 2020 BlockchainBPI Ed Vergara <vergara_ed@yahoo.com>
  * 
  *
  * WebbService API
@@ -40,6 +40,7 @@
 #include "../../include/jwthelper.h"
 #include "../../include/cryptreservesecureapi.h"
 #include "../../include/queue.h"
+#include <sys/stat.h>
 
 #define PORT 2884
 #define PREFIX "/auth"
@@ -47,6 +48,7 @@
 #define DISCOVER "/discovery"
 #define ACCESS_CTRL_MAX_AGE 1800
 #define FILE_PREFIX "/upload"
+#define FILECACHEDIR "/tmp/crcache"
 
 #define USER "test"
 #define PASSWORD "testpassword"
@@ -90,7 +92,9 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 	LogMsg("callback_create_user_account.");
 	
 	printf("RestServerAPI::callback_create_user_account len=%d, strlen=%d\n", request->binary_body_length, strlen(request->binary_body));
+	
 	// Create a wallet address from a managed ethereum node
+	struct Data_t *dt = calloc(1, sizeof(struct Data_t));
 	// create a smart contract for managing this users session token and documents.
 	char *body;
 	//char *loginReqData;
@@ -104,52 +108,73 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 	printf("Creating user %s Len:%u\n", reqData, (unsigned int) strlen(reqData));
 	y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_create_user_account %s", reqData);
 
-	//UserPtr pusr = malloc(sizeof(UserPtr));
 	struct User *pusr = calloc(1, sizeof(struct User));
-	pusr->name = calloc(3,1); // ed/0
-	sprintf(pusr->name, "ed");
-	pusr->password = calloc(5,1); // 1234/0
-	sprintf(pusr->password, "1234");
-	pusr->email = calloc(9,1); // ed@ed.com/0
-	sprintf(pusr->email, "ed@ed.com");
-	printf("Name: %s\n", pusr->name);
-	printf("Password: %s\n", pusr->password);
-	printf("Email: %s\n", pusr->email);
-	
+	struct User *pGetUser = calloc(1, sizeof(UserPtr));
 
-	//*pusr = (struct User){0};
 	if ( json_to_user(reqData, &pusr) ==0)
 	{
-		printf("json_to_user \n\tname: %s\n\tid: %d\n\tpassword: %s\n\temail: %s\n", //Len:%u\n",
-		pusr->name,pusr->id, pusr->password, pusr->email); //, (unsigned int) strlen(reqData));
-		//char *response_value = msprintf("CRYPTRESERVE_USER%s", pusr->password);
-
-
-    	//u_map_put(response->map_header, HEADER_RESPONSE, response_value);    
-		//o_free(response_value);
-
-//	initDB();
-//	printf("Json Parsed User struct for Name: %s", usr->name);
+		printf("json_to_user \n\tname: %s\n\tid: %d\n\tpassword: %s\n\temail: %s\n", 
+			pusr->name,pusr->id, pusr->password, pusr->email); 
 		
-
-		UserPtr *pGetUser = (UserPtr*)malloc(sizeof(UserPtr*));
-   	
-	   LogMsg("GetUser");
+		char *response_value = msprintf("CRYPTRESERVE_USER%s-%s", pusr->name, pusr->password);
+    	u_map_put(response->map_header, HEADER_RESPONSE, response_value);    
+		o_free(response_value);
+		LogMsg("GetUser");
 		if(GetUser(pusr->id, &pGetUser)==0) 
 		{
-		//	free(pGetUser);
-		//pGetUser==NULL)
-		//	createsecretapi(pusr->password, response);
-			LogMsg("AddUser");
+			sprintf(dt->name, "%s", pusr->name);
+			sprintf(dt->addr, "%s", pusr->email);
+			dt->number=pGetUser->id;
+			dt->cmd = createprofile;
+
+			////////////////////////////////////////////////
+			// Create the Profile File to be sent to IPFS //
+			////////////////////////////////////////////////
+			snprintf(dt->file,strlen(pusr->email)+1, pusr->email);
+			sprintf(dt->path, FILECACHEDIR);
+			sprintf(dt->pathfile, "%s/%s",  dt->path, dt->file);
+			
+			printf("Cache File: %s\n", dt->pathfile);
+			FILE *fileProfile = fopen(dt->pathfile,"w+");
+			fprintf(fileProfile, "%s\n%s\n%s\n", pusr->name, pusr->email, pusr->password);
+			fflush(fileProfile);
+
+			struct stat file_info;
+			if(fstat(fileno(fileProfile), &file_info) != 0)
+				return 1; 
+			__off_t fsize = file_info.st_size;  
+			printf("Local file size: %d bytes.\n", fsize);
+			dt->filesize = fsize;
+			fclose(fileProfile);
+			
+			////////////////////////////////
+			//	Create InterPlanetery ID  //
+			////////////////////////////////
+			LogMsg("Creating Interpalenary Identification...");
+			SendIPFSData(&dt);
+			LogMsg("----------------------------------------------------------");
+			printf("Interplantery Identification Created.\n\t***\tCID: %s\n\n", dt->CID);
+			pusr->cid = calloc(strlen(dt->CID)+1,1);
+			strncpy(pusr->cid, dt->CID, strlen(dt->CID)+1);
+
+			////////////////////
+			// Add User to DB //
+			////////////////////
+			LogMsg("AddUser To Database");
 			AddUser(pusr);
 
-	
+			u_map_put(response->map_header, "Name", pusr->name);
+
 			char key[128];
 			char val[256];
 			char expires[16] = "10";
 			sprintf(key, "CryptReserve_%s", pusr->name);
+
+			pusr->cid = calloc(strlen(dt->CID)+1, 1);
+			sprintf(pusr->cid, "%s", dt->CID);
+
 			sprintf(val, "%s", pusr->password);
-        	y_log_message(Y_LOG_LEVEL_INFO, "CreateUserLogin - \n\tk=%s \n\tvalue=%s", key, val);
+        	y_log_message(Y_LOG_LEVEL_INFO, "CreateUserLogin - \n\tk=%s \n\tvalue=%s \n\tCID=%s", key, val, pusr->cid);
 			
 			ulfius_add_cookie_to_response(response, key, val, NULL, 0, NULL, NULL, 0, 0);
 
@@ -157,16 +182,22 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 		  	if (ulfius_add_cookie_to_response(response, key, val, expires, 0, NULL, NULL, 0, 0) != U_OK) {
            		y_log_message(Y_LOG_LEVEL_ERROR, "CreateUserLogin - Error adding cookie %s/%s to response", key, val);
            	}
-                  //o_free(path);
-                    //o_free(expires);
-			body = msprintf(APP_NAME " User succesfully Created for User : %s!", reqData);
+			   //o_free(path);
+               //o_free(expires);
+
+			body = msprintf(APP_NAME " User succesfully Created for User: %s!,  CID: %s", reqData, pusr->cid);
 			printf("Body=%s/n", body);
 			LogMsg("body");
+			LogMsg("_set_string_body_response"); 
+			ulfius_set_string_body_response(response, 200, body);
+
+			LogMsg("Done..."); 
+
 		}
 		else 
 		{
 			LogMsg("msprintf pGetUser Null?");
-			body = msprintf( APP_NAME " creation failed, User already exists, try a different id + usr combo %s.", (*pGetUser)->name);
+			body = msprintf( APP_NAME " creation failed, User already exists, try a different id + usr combo %s.", pGetUser->name);
 		}
 		
 	}
@@ -177,22 +208,20 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 		printf("json_to_user error\n");
 	       printf("user: 	\n\tname: %s\n\tid: %d\n\tpassword: %s\n\temail: %s\nLen:%u\n",pusr->name,pusr->id,pusr->password,pusr->email, (unsigned int) strlen(reqData));
 	}
-
-	LogMsg("_set_string_body_response"); 
-	ulfius_set_string_body_response(response, 200, body);
-
-	LogMsg("Done..."); 
 	
-  	u_map_put(response->map_header, "Name", pusr->name);
-
-
 	free((char*)pusr->name);
 	free((char*)pusr->password);
 	free((char*)pusr->email);
+	free((char*)pusr->cid);
 	free(pusr);
-	free(body);
-	free(reqData);
-	
+	free((char*)pGetUser->name);
+	free((char*)pGetUser->password);
+	//free(pGetUser->email);
+	free(pGetUser);
+	free(dt);
+	free((char*)body);
+	free((char*)reqData);
+
   	return U_CALLBACK_COMPLETE;
 }
     
@@ -594,7 +623,7 @@ void ErrMsg(char * msg){
 	y_log_message(Y_LOG_LEVEL_ERROR, "s", msg);
 }
 
-int StartRestServer(int argc, char **argv) {
+int StartRestServer() {
   	// Initialize the instance
   	struct _u_instance instance;
     
@@ -622,10 +651,10 @@ int StartRestServer(int argc, char **argv) {
 	LogMsg("*Endpoint: Added GET userlogin with callback_user_login \n");
 
 	//Client API
-	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createclientaccount", 0, &callback_create_client_account, argv);
+	ulfius_add_endpoint_by_val(&instance, "PUT", PREFIX, "/createclientaccount", 0, &callback_create_client_account, NULL);
 	LogMsg("*Endpoint: Added GET createclientaccount with callback_create_client_account \n");
 
-  	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/clientlogin", 0, &callback_client_logon, argv);
+  	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/clientlogin", 0, &callback_client_logon, NULL);
 	//printf("*Endpoint: Added GET clientlogin with callback_user_login \n");
 	LogMsg("*Endpoint: Added GET clientlogin with callback_user_login \n");
 
@@ -634,7 +663,7 @@ int StartRestServer(int argc, char **argv) {
 	/*
 	  OPTIONS
 	*/
-	ulfius_add_endpoint_by_val(&instance, "OPTIONS", DISCOVER, "*", 0, &callback_options, argv);
+	ulfius_add_endpoint_by_val(&instance, "OPTIONS", DISCOVER, "*", 0, &callback_options, NULL);
 
 	//File Upload
 	// Max post param size is 16 kb, which means an uploaded file is no more than 16 kb
@@ -658,21 +687,24 @@ int StartRestServer(int argc, char **argv) {
   	// Endpoint list declaration
   	// The first 3 are webservices with a specific url
   	// The last endpoint will be called for every GET call and will serve the static files
-  	ulfius_add_endpoint_by_val(&instance, "*", FILE_PREFIX, NULL, 1, &callback_upload_file, argv);
+  	ulfius_add_endpoint_by_val(&instance, "*", FILE_PREFIX, NULL, 1, &callback_upload_file, NULL);
   	ulfius_add_endpoint_by_val(&instance, "GET", "*", NULL, 1, &callback_static_file, &mime_types);
 
 	//u_map_init();
 
-#ifndef U_DISABLE_GNUTLS
-  	if (argc > 3) {
-    	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/client_cert", 0, &callback_auth_client_cert, argv);
-  	}
-#endif
+// #ifndef U_DISABLE_GNUTLS
+//   	if (argc > 3) {
+//     	ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/client_cert", 0, &callback_auth_client_cert, argv);
+//   	}
+// #endif
   
 #ifndef U_DISABLE_GNUTLS
   // Start the framework
-  	if (argc > 3) {
-    	char * server_key = read_file(argv[1]), * server_pem = read_file(argv[2]), * root_ca_pem = read_file(argv[3]);
+  	if (false) {
+		char sshfile[32] = "/tmp/crcache/ssh.cert";
+		char sshfilepem[32] = "/tmp/crcache/ssh.cert.pem";
+		char sshrootpem[32] = "/tmp/crcache/ssh.root.pem";
+    	char * server_key = read_file(sshfile), * server_pem = read_file(sshfilepem), * root_ca_pem = read_file(sshrootpem);
     	if (ulfius_start_secure_ca_trust_framework(&instance, server_key, server_pem, root_ca_pem) == U_OK) {
       		printf("Start secure CryptReserve Node on port %u\n", instance.port);
     

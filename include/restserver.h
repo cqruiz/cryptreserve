@@ -62,7 +62,7 @@ extern char * print_map(const struct _u_map * map);
 int callback_auth_client_cert (const struct _u_request * request, struct _u_response * response, void * user_data);
 #endif
 
-int StartRestServer(int argc, char **argv);
+int StartRestServer();
 void LogMsg(char *msg);
 void ErrMsg(char * msg);
 

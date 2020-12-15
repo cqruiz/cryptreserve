@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
@@ -21,7 +20,7 @@ struct test_data
 };
 
 typedef enum eCmd
-{addfile,getfile,uploadfile} eCmd;
+{addfile,getfile,pinfile,unpinfile,uploadfile,createprofile} eCmd;
 //typedef enum eCmd Cmd;
 extern enum eCmd Cmd;
 
@@ -34,7 +33,10 @@ typedef struct Data_t{
     char addr[256];
     char CID[256];
     FILE *fpData;
-    char filepath[256];
+    char file[256];
+    char path[256];
+    char pathfile[256];
+    int filesize;
 } Data_t;
 
 //typedef struct Data_t *DATA;

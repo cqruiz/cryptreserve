@@ -7,3 +7,4 @@ obj/
 plugins
 *.o
 *.swp
+*.gch

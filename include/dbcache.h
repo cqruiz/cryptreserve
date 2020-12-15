@@ -9,19 +9,24 @@
 #define PASSWORD_SIZE 128
 #define DBNAME "cryptreserve.db"
 #define ID_COL_NAME "Id"
+#define CID_COL_NAME "CID"
 #define NAME_COL_NAME "Name"
 #define PWD_COL_NAME "Password"
-#define EMAIL_COL_NAME "Password"
+#define EMAIL_COL_NAME "Email"
 #define TOK_COL_NAME "Token"
 #define USER_TABLE_NAME "users"
 #define CLIENT_TABLE_NAME "clients"
 #define TOKEN_TABLE_NAME "tokens"
+
+#define MAXFIELDSIZE 1024
 
 struct User{
 	char *name;
 	int id;
 	char *password;
 	char *email;
+	char *cid;
+	char *wallet;
 };
  
 typedef struct User *UserPtr;

@@ -134,7 +134,7 @@ then
 	echo "*****************************"
 	echo " Glewlwyd is not installed."
 	echo "*****************************"
-	git clone https://github.com/babelouest/glewlwyd.git
+	#git clone https://github.com/babelouest/glewlwyd.git
 fi
 if [ -d "glewlwyd/build" ]
 then
@@ -189,7 +189,7 @@ if [ ! -d "liblfds" ]; then
 	echo "*************************************************************"
 	echo "* Download liblfds (https://github.com/liblfds/liblfds.git) *"
 	echo "*************************************************************"
-	git clone https://github.com/liblfds/liblfds.git
+	#git clone https://github.com/liblfds/liblfds.git
 fi
 
 # Install liblfds 
@@ -209,38 +209,6 @@ if [ -d "liblfds" ]; then
 	echo "*****************************"
 fi
 
-#json-c
-echo "*****************************"
-echo "Install json-c"
-echo "*****************************"
-if [ ! -d "json-c" ]; then
-	echo "***************************************************************************"
-	echo "* json-c installation required... (https://github.com/json-c/json-c.git)  *"
-	echo "***************************************************************************"
-	git clone https://github.com/json-c/json-c.git
-fi
-
-if [ -d "json-c" ]; then
-	cd json-c
-	echo "*****************************"
-	echo "json-c building..."
-	echo "*****************************"
-	rm -rf build
-	mkdir build
-	cd build
-	cmake ..
-	make
-	sudo make install
-	cd ..
-	echo "*****************************"
-	echo "json-c build completed."
-	echo "*****************************"
-else
-	echo "*****************************"
-	echo "json-c alreadey installed."
-	echo "*****************************"
-fi
-
 # Jansson 
 echo "*****************************"
 echo "Install Jansson"
@@ -253,28 +221,25 @@ if [ ! -d "jansson" ]; then
 fi
 
 if [ -d "jansson" ]; then
-        cd jansson
-        autoreconf -i
-
+	cd jansson
+	autoreconf -i
 	./configure
-        echo "*****************************"
-        echo "jansson building..."
-        echo "*****************************"
-        make
-        sudo make install
-        cd ..
-        echo "*****************************"
-        echo "jansson build completed."
-        echo "*****************************"
+	echo "*****************************"
+	echo "jansson building..."
+	echo "*****************************"
+	make
+	sudo make install
+	cd ..
+	echo "*****************************"
+	echo "jansson build completed."
+	echo "*****************************"
 else
-        echo "*****************************"
-        echo "jansson installation error!"
-        echo "*****************************"
+	echo "*****************************"
+	echo "jansson installation error!"
+	echo "*****************************"
 fi
 
-
-
-# libjwt 
+# libjwt
 echo "*****************************"
 echo "Install libjwt"
 echo "*****************************"
@@ -347,7 +312,7 @@ if [ -d "hoel" ]; then
 	echo "*****************************"
 	cd hoel/src
 	make clean
-	sudo make uninstall
+	#sudo make uninstall
 	sudo apt-get -y install libmysqlclient-dev 
 	#make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 && sudo make install
 	make && sudo make install
@@ -368,7 +333,7 @@ if [ -d "ulfius" ]; then
 	echo "*****************************"
 	cd ulfius/src
 	make clean
-	sudo make uninstall
+	#sudo make uninstall
 	make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 && sudo make install
 	cd ../..
 	echo "*****************************"
@@ -425,3 +390,35 @@ cd ../..
 echo "*****************************"
 echo "Done Buidling Glewlwyd."
 echo "*****************************"
+
+
+#Install Solidity
+echo "*****************************"
+echo "Install Solidity"
+echo "*****************************"
+
+if [ ! -d "solidity" ]; then
+	echo "*****************************"
+	echo "Git clone Solidity."
+	echo "*****************************"
+	git clone --recursive https://github.com/ethereum/solidity.git
+	echo "*****************************"
+	echo "Dependencies: Boost..."
+	echo "*****************************"
+	cd solidity
+	./scripts/install_deps.sh
+
+	echo "*****************************"
+	echo "Solidity Building..."
+	echo "*****************************"
+	mkdir build
+	cd build
+	cmake .. && make
+	cd ../..
+	echo "*****************************"
+	echo "Done Buidling Solidity."
+	echo "*****************************"
+
+fi
+
+
