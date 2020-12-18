@@ -1,4 +1,4 @@
-# [SOVID](https://www.blockchainbpi.com)
+# [SOVID - Sovereign Id](https://www.blockchainbpi.com)
 SOVID is a server exposing IPFS using Blockchain for sovereign identification and permissioning and exposed vias a RestAPI.
 
 OAuth 2.0
