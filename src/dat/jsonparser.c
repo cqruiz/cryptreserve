@@ -31,6 +31,7 @@ int json_to_user(char *Json, struct User **pusr)
 	printf("json_to_user: %s\n", Json);
 
 	json_t *json;
+
 	json_error_t error;
 	json = json_loads(Json, 0, &error);
 

@@ -361,6 +361,38 @@ if [ -d "libcbor" ]; then
 	make
 	sudo make install
 	cd ..
+	echo "*****************************"
+	echo "Ulfius build completed."
+	echo "*****************************"
+fi
+
+#Install libMBA
+echo "*****************************"
+echo "Install LibMBA"
+echo "*****************************"
+
+if [ ! -d "libmba" ]; then
+	echo "*****************************"
+	echo "Git clone LibMBA."
+	echo "*****************************"
+	git clone https://github.com/innerout/libmba.git
+fi
+if [ -d "libmba" ]; then
+	echo "*****************************"
+	echo "LibMBA Building..."
+	echo "*****************************"
+	cd libmba
+	cmake ..
+	cd ../src
+	make
+	echo "*****************************"
+	echo "LibMBA Build Completed."
+	echo "*****************************"
+	sudo make install
+	cd ../..
+	echo "*****************************"
+	echo "LibMBA Installation Completed."
+	echo "*****************************"
 fi
 
 #Install Glewlwyd
@@ -385,10 +417,13 @@ echo "*****************************"
 cd glewlwyd/build
 sudo cmake ..
 make
+echo "*****************************"
+echo "Done Buidling Glewlwyd."
+echo "*****************************"
 sudo make install
 cd ../..
 echo "*****************************"
-echo "Done Buidling Glewlwyd."
+echo "Glewlwyd Installed"
 echo "*****************************"
 
 

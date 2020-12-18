@@ -7,7 +7,7 @@ CryptReserve is a server written in C exposing IPFS and using Blockchain for per
       User creates a Profile Contract that links to the Passport IPFS CID file.
       This ERC 1155 distributes burnable tokens to decrypt and view IPFS Attributes
       - CID
-      - WalletId's - Permissions
+      - Map [WalletId, Scopes(CIDS-IPFSAttributes)] - Permissions
       - CIDList (IPFS Attributes) (Coins/Personal Information Files/Permissioned/Encrypted)
         - CID is 21?
           - Wallet Ids (Permissioned to view)
@@ -39,6 +39,9 @@ Run install.sh (./install.sh)
 * Yder - Logging library for C applications
 * Glewlwyd - OAuth2
 * OpenSSL
-* JWT
 * Libjwt
-* libgnutls28-dev
+* Libgnutls28-dev
+* Libssl
+* Libcrypto
+* Libsqlite3
+* Libcurl 
