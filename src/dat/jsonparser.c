@@ -51,7 +51,8 @@ int json_to_user(char *Json, pUser pusr)
 	  //status = ERROR;
 	  return 1;
 	}
-	pusr->name=(char *)malloc((strlen(json_object_get_string(name)) + 1) * sizeof(char));
+	//pusr->name=(char *)malloc((strlen(json_object_get_string(name)) + 1) * sizeof(char));
+	pusr->name=(char *)malloc((strlen(json_string_value(name)) + 1) * sizeof(char));
 	strcpy(pusr->name, json_string_value(name));
 
 	//Password
@@ -62,7 +63,8 @@ int json_to_user(char *Json, pUser pusr)
           //status = ERROR;
           return 2;
         }
-	pusr->password=(char *)malloc((strlen(json_object_get_string(password)) + 1) * sizeof(char));
+	//pusr->password=(char *)malloc((strlen(json_object_get_string(password)) + 1) * sizeof(char));
+	pusr->password=(char *)malloc((strlen(json_string_value(password)) + 1) * sizeof(char));
         strcpy(pusr->password, json_string_value(password));
 
 	// Email
@@ -84,10 +86,10 @@ int json_to_user(char *Json, pUser pusr)
           return 4;
         }
         // id now equal to json_t object of type int.
-        pusr->id = json_int_value(id);
+        //pusr->id = json_int_value(id);
 
 	printf("Name: %s\n", pusr->name);
-	printf("Id: %d\n", pusr->id);
+//	printf("Id: %d\n", pusr->id);
 	printf("Password: %s\n", pusr->password);
 	if (email!=0) printf("Email: %s\n", pusr->email);
 

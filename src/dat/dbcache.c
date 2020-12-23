@@ -50,7 +50,7 @@ void initDB()
 		fprintf(stderr, "Cannot open database(" DBNAME "): %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);
         
-        return 1;
+        return;
     }
 
 	//User Table
@@ -67,6 +67,7 @@ void initDB()
     		fprintf(stderr, "Failed to create table " USER_TABLE_NAME "\n");
        		fprintf(stderr, "SQL error: %s\n", err_msg);
         	sqlite3_free(err_msg);
+            return;
     	} else {
         	fprintf(stdout, "Table " USER_TABLE_NAME " users created successfully\n");
    	 	}
@@ -111,7 +112,7 @@ void initDB()
 	
 	sqlite3_close(db);
     
-    return 0;
+    return;
 }
 
 
@@ -269,13 +270,13 @@ int getDataByName(char *name, char *tableName, pUser pUsrOut)
     
     printf("SQL prepare failure: %s", sqlite3_errmsg(db));
     sqlite3_finalize(res);
-    	return;
+    	return 1;
 	}
 
 	if (sqlite3_bind_text(res, 1, name, -1, NULL) != SQLITE_OK) {
     	printf("Bind 1 failure: %s", sqlite3_errmsg(db));
     	sqlite3_finalize(res);
-    	return;
+    	return 1;
 	}
 
 	if(sqlite3_step(res) != SQLITE_DONE) {

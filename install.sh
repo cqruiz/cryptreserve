@@ -244,14 +244,20 @@ if [ $clean -eq 1 ]; then
         echo "*     Uninstalling hoel     *"
         echo "*****************************"
         if [ $debug -eq 0 ]; then
-            cd hoel/src
-            sudo make uninstall	
+            cd hoel
+            if [ -d build ]; then
+                cd build
+                echo " ** make clean build **"
+                make clean
+                make uninstall
+                cd ..
+            fi
             echo " ** make clean **"
             make clean
-            cd ../..
+            cd ..
             if [ $remove -eq 1 ]; then
                 echo "****   Removing all of Hoel   ****"
-                rm -rf hoel
+                sudo rm -rf hoel
             fi
         else
             log "Debug Run Not Uninstalling"
@@ -292,16 +298,19 @@ if [ $clean -eq 1 ]; then
     #Uninstall Glewlwyd
     echo "*****************************"
     echo "* Check/Uninstall glewlwyd  *"
-    log "*   Current Dir: ${PWD}     *"
+    log "\*  Current Dir: ${PWD}     \*"
     echo "*****************************"
 
-    if [ -d ulfius ]; then
+    if [ -d glewlwyd ]; then
         echo "*****************************"
-        echo "*      glewlwyd cleaned     *"
+        echo "*      clean glewlwyd       *"
         echo "*****************************"
         if [ $debug -eq 0 ]; then
+            log "cd glewlwyd"
             cd glewlwyd
+            log "make clean glewlwyd"
             make clean
+            log "cd src"
             cd src
             make clean
             cd ..
@@ -315,8 +324,9 @@ if [ $clean -eq 1 ]; then
                 cd ../..
                 log "Current Dir: ${PWD}"
             else
+                log "cd .."
                 cd ..
-                log "Current Dir: ${PWD}"
+                log "Glewlwyd - Current Dir: ${PWD}"
             fi
             if [ $remove -eq 1 ]; then
                 echo "Removing all of Glewlwyd."
@@ -486,6 +496,42 @@ if [ $clean -eq 1 ]; then
         echo "libjwt uninstallation error!"
         echo "*****************************"
     fi
+    
+    #openssl
+    echo "*****************************"
+    echo "*    Uninstall openssl      *"
+    echo "*****************************"
+    if [ -d openssl ]; then
+        echo "*****************************"
+        echo "*     openssl clean...      *"
+        echo "*****************************"
+        if [ $debug -eq 0 ]; then
+            cd openssl 
+            echo "*****************************"
+            echo "*    openssl uninstall...   *"
+            log "* Current Dir: ${PWD}"
+            echo "*****************************"
+           ## make clean
+            echo "*** make uinstall *** "
+            ##sudo make uninstall
+            cd ..
+            if [ $remove -eq 1 ]; then
+                echo "Removing all of libcbor."
+             ##   sudo rm -rf openssl
+            fi
+        else
+            log "Debug Mode - Not Installing."
+        fi
+        echo "*****************************"
+        echo "openssl clean unsintall completed."
+        echo "*****************************"
+    else
+        echo "*****************************"
+        echo "openssl doesn't exist - Need to install!"
+        echo "*****************************"
+    fi
+    log "Current Dir: ${PWD}"
+
 
 fi
 
@@ -603,34 +649,30 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     echo "*****************************"
     echo "Install openssl"
     echo "*****************************"
-    if [ ! -d openssl ]; then
+    if [ $debug -eq 0 ]; then
+      ##  if [ ! -d openssl ]; then
+     ##       git clone https://github.com/openssl/openssl.git
+      ##  fi
+
         echo "*****************************"
         echo "openssl installation required..."
         echo "*****************************"
-        if [ $debug -eq 0 ]; then
-            git clone https://github.com/openssl/openssl.git
-            cd openssl 
-            echo "*****************************"
-            echo "openssl building..."
-            log "* Current Dir: ${PWD}"
-            echo "*****************************"
-            ./config 
-            make
-            echo "*** make install_sw no man *** "
-            sudo make install_sw
-            cd ..
-        else
-            log "Debug Mode - Not Installing."
-        fi
+        cd openssl 
         echo "*****************************"
-        echo "openssl build completed."
+        echo "openssl building..."
+        log "* Current Dir: ${PWD}"
         echo "*****************************"
+       ## ./config 
+       ## make
+        echo "*** make install_sw no man *** "
+       ## sudo make install_sw
+        cd ..
     else
-        echo "*****************************"
-        echo "openssl previously installed!"
-        openssl version
-        echo "*****************************"
+        log "Debug Mode - Not Installing."
     fi
+    echo "*****************************"
+    echo "openssl build completed."
+    echo "*****************************"
     log "Current Dir: ${PWD}"
 
     # libjwt 
@@ -672,7 +714,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     # Install Orcania
     echo "*****************************"
     echo "Install Orcania C Utilities"
-    log "Current Dir: ${PWD}"
+    echo "Current Dir: ${PWD}"
     echo "*****************************"
     
     download_git_repo orcania
@@ -686,16 +728,23 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
 
             if [ ! -d build ]; then
                 mkdir build
-                log "Current Dir: ${PWD}"
+                echo "Current Dir: ${PWD}"
             fi
 
             cd build
-            log "Current Dir: ${PWD}"
-            log " ** cmake/make install **"
-            cmake ..&& sudo make install 
+            echo "Current Dir: ${PWD}"
+            echo " ** cmake/make install **"
+
+            # if [[ "$OSTYPE" == "darwin"* ]]; then
+                # cmake -DWITH_JOURNALD=off ..
+            # else
+                cmake ..
+            # fi
+            make
+            make install 
             cd ../..
         else
-            log "Debug Mode - Not Installing."
+            echo "Debug Mode - Not Installing."
         fi
           
         echo "*****************************"
@@ -703,12 +752,14 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         echo "*****************************"
     fi
         
-    log "Current Dir: ${PWD}"
+    echo "Current Dir: ${PWD}"
     
+    download_git_repo yder
+
     # Install Yder for logging
     echo "*****************************"
     echo "Install Yder for Logging"
-    log "Current Dir: ${PWD}"
+    echo "Current Dir: ${PWD}"
     echo "*****************************"
     if [ -d yder ]; then
         echo "*****************************"
@@ -716,27 +767,27 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         echo "*****************************"
         if [ $debug -eq 0 ]; then
             cd yder/src
-            log "Current Dir: ${PWD}"
+            echo "Current Dir: ${PWD}"
             
             if [[ "$OSTYPE" == "linux-gnu" ]]; then
-                log " ** make install linux**"
+                echo " ** make install linux**"
                 make
             elif [[ "$OSTYPE" == "darwin"* ]]; then
-                log " ** make install Disable Journal on MacOS **"
+                echo " ** make install Disable Journal on MacOS **"
                 make Y_DISABLE_JOURNALD=1
             fi
             
-            log " ** make install **"
+            echo " ** make install **"
             sudo make install
             cd ../..
         else
-            log "Debug Mode - Not Installing."
+            echo "Debug Mode - Not Installing."
         fi
         echo "*****************************"
         echo "Yder build completed."
         echo "*****************************"
     fi
-    log "Current Dir: ${PWD}"
+    echo "Current Dir: ${PWD}"
 
     # Install Ulfius
     echo "*****************************"
@@ -761,7 +812,11 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
             cd build
             log "Current Dir: ${PWD}"
 
-            cmake ..
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                cmake -DWITH_JOURNALD=off ..
+            else
+                cmake ..
+            fi
             make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 && sudo make install
 
             cd ../..
@@ -804,13 +859,13 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
                 cmake -DWITH_MARIADB=off -DWITH_PGSQL=off ..
             elif [[ "$OSTYPE" == "darwin"* ]]; then
                 echo "Darwin Build disable JournalD"
-                cmake -DWITH_JOURNALD=off -DWITH_MARIADB=off -DWITH_PGSQL=off ..
+                cmake -DWITH_SQLITE3=on -DWITH_MARIADB=off -DWITH_PGSQL=off -DWITH_JOURNALD=off ..
             fi
 
             log $OSTYPE
-
-            make
-            sudo make install
+            
+            make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 DISABLE_JOURNALD=1 
+            make install
             cd ../..
         else
             log "Debug Mode - Not Installing."
@@ -861,7 +916,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     echo "*****************************"
     echo "Install LibOAuth"
     log "Current Dir: ${PWD}"
-    echo ******************************"
+    echo "******************************"
 
     download_git_repo liboauth
 
@@ -869,7 +924,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     echo "LibOAuth Building..."
     echo "*****************************"
 
-    if [ debug -eq 0 ]; then
+    if [ $debug -eq 0 ]; then
         log "cd liboauth"
         cd liboauth
         log "in liboauth: ${PWD}"
@@ -891,26 +946,30 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     echo "*****************************"
     echo "Install LibConfig"
     log "Current Dir: ${PWD}"
-    echo ******************************"
+    echo "******************************"
 
-    download_git_repo liboauth
+    download_git_repo libconfig
 
     echo "*****************************"
     echo "LibConfig Building..."
     echo "*****************************"
 
-    if [ debug -eq 0 ]; then
+    if [ $debug -eq 0 ]; then
     
         echo "Tools dir: ${PWD}"
-        echo "cd libconfig"
-        cd libconfig
-        echo "in libconfig: ${PWD}"
+        if [ -d libconfig ]; then
+            echo "cd libconfig"
+            cd libconfig
+            echo "in libconfig: ${PWD}"
 
-        ./configure
-        echo "make in dir: ${PWD}"
-        make 
-        make install
-        cd ..
+            ./configure
+            echo "make in dir: ${PWD}"
+            make 
+            make install
+            cd ..
+        else
+            echo "***** Error - libconfig not found. *****"
+        fi
     else
         echo "Debug Mode - Not Building."
     fi
@@ -922,7 +981,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     #Install Glewlwyd
     echo "*****************************"
     echo "Install Glewlwyd"
-    log "Current Dir: ${PWD}"
+    echo "Current Dir: ${PWD}"
     echo "*****************************"
 
     if [ ! -d glewlwyd ]; then
@@ -944,6 +1003,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         echo "in glewlwyd: ${PWD}"
 
         if [ ! -d build ]; then
+            export  LIBOATH_LIBRARY="/usr/local/lib/liboauth.dylib"
             mkdir build
             echo "mkdir build"
             echo "curr dir glewlwyd still: ${PWD}"
@@ -953,7 +1013,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         echo "cd build: ${PWD}"
         cmake -DWITH_JOURNALD=off -DWITH_MARIADB=off -DWITH_PGSQL=off ..
         echo "make in dir: ${PWD}"
-        make -DWITH_JOURNALD=off 
+        make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 DISABLE_JOURNALD=1
         sudo make install
         cd ../..
     else
@@ -962,4 +1022,42 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     echo "*****************************"
     echo "Done Buidling Glewlwyd."
     echo "*****************************"
+
+
+    #Install c-libp2p
+    echo "*****************************"
+    echo "Install c-libp2p"
+    echo "Current Dir: ${PWD}"
+    echo "*****************************"
+
+    if [ ! -d c-libp2p ]; then
+        echo "*****************************"
+        echo "Git clone c-libp2p."
+        echo "*****************************"
+        if [ $debug -eq 0 ]; then
+           git clone https://github.com/Agorise/c-libp2p.git 
+        fi
+    fi
+##    echo "*****************************"
+##    echo "*     c- libp2p             *"
+##    echo "*****************************"
+
+##    if [ $debug -eq 0 ]; then
+##        log "Tools dir: cd c-libp2p: ${PWD}"
+##        echo "cd c-libp2p"
+##        cd c-libp2p
+##        log "in c-libp2p: ${PWD}"
+
+##        echo "make in dir: ${PWD}"
+##        git submodule update --init --recursive
+##        make all
+##        sudo make install
+##        cd ..
+##    else
+##        echo "Debug Mode - Not Building."
+##    fi
+ ##   echo "*****************************"
+ ##   echo "*  Done Buidling c-libp2p   *"
+ ####   echo "*****************************"
+
 fi

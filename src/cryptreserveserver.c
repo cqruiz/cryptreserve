@@ -19,12 +19,21 @@ void CurlIPFSClient(void *args )
 	printf("Stopped Curl Server.");
 }
 
+//WebSocket thread
+void WebSocket(void *args )
+{
+	printf("Starting Web Socket.");
+    	
+    char *arrArgs[] = {"localhost","6001","peers","GET","/api/v0/bitswap/stat"};
+	StartWebSocket(1,arrArgs);
+	printf("Stopped Web Socket.");
+}
 
 //Rest API Server thread
 void RestAPIServer(void *args )
 {
 	printf("Starting Rest Server.");
-    	char *arrArgs[] = {"localhost","5001","peers","GET","/api/v0/bitswap/stat"};
+    char *arrArgs[] = {"localhost","5001","peers","GET","/api/v0/bitswap/stat"};
 	//Initialize the database if non exists.
 	initDB();
 	StartRestServer(1,arrArgs);
@@ -38,6 +47,7 @@ int main(int argc, const char* argv[] )
     //Start the Curl IPFS Client and Rest API Server
     pthread_t curlIPFSClient;;
     pthread_t restAPIServer;
+    pthread_t webSocket;
 
 //    Queue *pQ =  ConstructQueue(100);
 
@@ -53,8 +63,16 @@ int main(int argc, const char* argv[] )
 	    fprintf(stderr, "Error creating Request Listener thread\n");
 	    return 1;
     }
-    printf("Running Request Listener Thread\n");
+    printf("Running Rest API Request Listener Thread\n");
 
+    /* create a Request Listener thread */
+    if(pthread_create(&webSocket, NULL, (void*)WebSocket, NULL)) {
+	    fprintf(stderr, "Error creating WebSocket Request Listener thread\n");
+	    return 1;
+    }
+    printf("Running WebSocket Request Listener Thread\n");
+    
+    pthread_join(webSocket, NULL);
     pthread_join(restAPIServer, NULL);
     pthread_join(curlIPFSClient, NULL);
 
