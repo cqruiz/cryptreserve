@@ -50,7 +50,7 @@ download_git_repo()
         echo "*    Git Clone repo=$REPO   *"
         echo "*********************************"
         if [ $debug -eq 0 ]; then
-            git clone https://github.com/blockchainbpi/$REPO.git
+            git clone https://github.com/vergaraed/$REPO.git
         else
             log "Running in debug mode, not cloning $REPO."
         fi
@@ -138,6 +138,10 @@ fi
 ################   Start   ###############
 ##########################################
 
+if [ ! -d tools ]; then
+    echo "Create Tools directory." 
+    mkdir tools
+fi
 # run under the tools dir.
 cd tools
 
@@ -160,10 +164,12 @@ if [ $clean -eq 1 ]; then
     if [ $debug -eq 0 ]; then
 
         if [[ "$OSTYPE" == "linux-gnu" ]]; then
+            echo  "Ubuntu"
             sudo apt-get -y remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
             echo "apt-get remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
                 # Ubuntu
         elif [[ "$OSTYPE" == "darwin"* ]]; then
+            echo "Mac OSX"
             brew remove libmicrohttpd
             brew remove liboauth
             brew remove gnutls
@@ -650,9 +656,10 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     echo "Install openssl"
     echo "*****************************"
     if [ $debug -eq 0 ]; then
-      ##  if [ ! -d openssl ]; then
-     ##       git clone https://github.com/openssl/openssl.git
-      ##  fi
+        if [ ! -d openssl ]; then
+            echo "clone openssl required..."
+            download_git_repo openssl
+        fi
 
         echo "*****************************"
         echo "openssl installation required..."
@@ -670,7 +677,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     else
         log "Debug Mode - Not Installing."
     fi
-    echo "*****************************"
+    echo "******************s***********"
     echo "openssl build completed."
     echo "*****************************"
     log "Current Dir: ${PWD}"
@@ -692,7 +699,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
             log "Current Dir: ${PWD}"
             autoreconf -i
             ./configure OPENSSL_CFLAGS=" " OPENSSL_LIBS="-lssl -lcrypto"
-            make 
+            make all
             log " ** make install **"
             sudo make install
             cd ..
@@ -725,23 +732,23 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         echo "*****************************"
         if [ $debug -eq 0 ]; then
             cd orcania
-
-            if [ ! -d build ]; then
-                mkdir build
-                echo "Current Dir: ${PWD}"
-            fi
-
-            cd build
+           
             echo "Current Dir: ${PWD}"
             echo " ** cmake/make install **"
 
-            # if [[ "$OSTYPE" == "darwin"* ]]; then
-                # cmake -DWITH_JOURNALD=off ..
-            # else
+            if [ ! -d build ]; then
+                mkdir build
+            fi
+            cd build
+            rm CMakeCache.txt
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                cmake -DWITH_JOURNALD=off ..
+            else
+                echo "Current Dir: ${PWD}"
                 cmake ..
-            # fi
+            fi
             make
-            make install 
+            sudo make install
             cd ../..
         else
             echo "Debug Mode - Not Installing."
@@ -766,19 +773,26 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         echo "Yder building..."
         echo "*****************************"
         if [ $debug -eq 0 ]; then
-            cd yder/src
+            cd yder
             echo "Current Dir: ${PWD}"
-            
+            if [ ! -d build ]; then
+                mkdir build
+            fi
+            cd build
+            rm CMakeCache.txt
+
             if [[ "$OSTYPE" == "linux-gnu" ]]; then
                 echo " ** make install linux**"
-                make
+                cmake ..
             elif [[ "$OSTYPE" == "darwin"* ]]; then
                 echo " ** make install Disable Journal on MacOS **"
-                make Y_DISABLE_JOURNALD=1
+                #make Y_DISABLE_JOURNALD=1
+                cmake -DWITH_JOURNALD=off ..
             fi
-            
+            make
             echo " ** make install **"
             sudo make install
+            ##  Mac Error: /bin/sh: -c: line 0: `ifeq (Darwin,Darwin)'  Fix this
             cd ../..
         else
             echo "Debug Mode - Not Installing."
@@ -813,11 +827,14 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
             log "Current Dir: ${PWD}"
 
             if [[ "$OSTYPE" == "darwin"* ]]; then
+                rm CMakeCache.txt
                 cmake -DWITH_JOURNALD=off ..
             else
                 cmake ..
             fi
-            make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 && sudo make install
+
+            # Fix Darwin error: incompatible pointer types passing 'int (void *, enum MHD_ValueKind, const char *, const char *)' to parameter of type 'MHD_KeyValueIterator'
+            make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 UWSCFLAG=1 && sudo make install
 
             cd ../..
         else
@@ -865,7 +882,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
             log $OSTYPE
             
             make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 DISABLE_JOURNALD=1 
-            make install
+            sudo make install
             cd ../..
         else
             log "Debug Mode - Not Installing."
@@ -875,7 +892,6 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         echo "*****************************"
     fi
     log "Current Dir: ${PWD}"
-
 
     #Install libcbor
     echo "*****************************"
@@ -887,8 +903,8 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         echo "Git clone LibCBOR."
         echo "*****************************"
         if [ $debug -eq 0 ]; then
-            # download_git_repo libcbor
-            git clone https://github.com/PJK/libcbor    
+            download_git_repo libcbor
+            #git clone https://github.com/PJK/libcbor    
         fi
         if [ -d "libcbor" ]; then
             echo "*****************************"
@@ -908,75 +924,10 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
             else
                 log "Debug Mode - Not Installing LibCbor."
             fi
-        fi
-    fi
-    log "Current Dir: ${PWD}"
-
-    # Install LibOAuth
-    echo "*****************************"
-    echo "Install LibOAuth"
-    log "Current Dir: ${PWD}"
-    echo "******************************"
-
-    download_git_repo liboauth
-
-    echo "*****************************"
-    echo "LibOAuth Building..."
-    echo "*****************************"
-
-    if [ $debug -eq 0 ]; then
-        log "cd liboauth"
-        cd liboauth
-        log "in liboauth: ${PWD}"
-        log "cd src: ${PWD}"
-        cd src
-        ./configure
-        log "make in dir: ${PWD}"
-        make 
-        make install
-        cd ../..
-    else
-        log "Debug Mode - Not Building LibOAuth."
-    fi
-    echo "*****************************"
-    echo "Done Buidling LibOAuth."
-    echo "*****************************"
-
-    # Install LibConfig
-    echo "*****************************"
-    echo "Install LibConfig"
-    log "Current Dir: ${PWD}"
-    echo "******************************"
-
-    download_git_repo libconfig
-
-    echo "*****************************"
-    echo "LibConfig Building..."
-    echo "*****************************"
-
-    if [ $debug -eq 0 ]; then
-    
-        echo "Tools dir: ${PWD}"
-        if [ -d libconfig ]; then
-            echo "cd libconfig"
-            cd libconfig
-            echo "in libconfig: ${PWD}"
-
-            ./configure
-            echo "make in dir: ${PWD}"
-            make 
-            make install
             cd ..
-        else
-            echo "***** Error - libconfig not found. *****"
         fi
-    else
-        echo "Debug Mode - Not Building."
     fi
-    echo "*****************************"
-    echo "Done Buidling LibConfig."
-    echo "*****************************"
-
+    log "Current Dir: ${PWD}"
 
     #Install Glewlwyd
     echo "*****************************"
@@ -1035,29 +986,9 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         echo "Git clone c-libp2p."
         echo "*****************************"
         if [ $debug -eq 0 ]; then
-           git clone https://github.com/Agorise/c-libp2p.git 
+            download_git_repo c-libp2p
+           #git clone https://github.com/Agorise/c-libp2p.git 
         fi
     fi
-##    echo "*****************************"
-##    echo "*     c- libp2p             *"
-##    echo "*****************************"
-
-##    if [ $debug -eq 0 ]; then
-##        log "Tools dir: cd c-libp2p: ${PWD}"
-##        echo "cd c-libp2p"
-##        cd c-libp2p
-##        log "in c-libp2p: ${PWD}"
-
-##        echo "make in dir: ${PWD}"
-##        git submodule update --init --recursive
-##        make all
-##        sudo make install
-##        cd ..
-##    else
-##        echo "Debug Mode - Not Building."
-##    fi
- ##   echo "*****************************"
- ##   echo "*  Done Buidling c-libp2p   *"
- ####   echo "*****************************"
 
 fi
