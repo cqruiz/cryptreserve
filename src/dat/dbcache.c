@@ -83,7 +83,7 @@ void initDB()
     rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
     
     if (rc != SQLITE_OK ) {
-    	fprintf(stderr, "Failed to add users to %s" USER_TABLE_NAME "\n");
+    	fprintf(stderr, "Failed to add users to %s\n", USER_TABLE_NAME);
        	fprintf(stderr, "SQL error: %s\n", err_msg);
         sqlite3_free(err_msg);
     } else {
@@ -105,10 +105,10 @@ void initDB()
         sqlite3_free(err_msg);
     } else {
         fprintf(stdout, "Table " CLIENT_TABLE_NAME " issuers created successfully\n");
+    	last_id = sqlite3_last_insert_rowid(db);
+    	printf("The last Id of the issuer inserted row is %d\n", last_id);
     }
     
-    last_id = sqlite3_last_insert_rowid(db);
-    printf("The last Id of the issuer inserted row is %d\n", last_id);
 	
 	sqlite3_close(db);
     

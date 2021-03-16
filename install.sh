@@ -27,8 +27,6 @@ Options:
         rebuild particular library
         {glewlwyd,hoel,json-c,libcbor,linconfig,libjwt,openssl,orcania,ulfius,yder}
 "    
-    
-    
 }
 
 log()
@@ -164,17 +162,17 @@ if [ $clean -eq 1 ]; then
     if [ $debug -eq 0 ]; then
 
         if [[ "$OSTYPE" == "linux-gnu" ]]; then
-            echo  "Ubuntu"
+            # Ubuntu
+            echo  "Ubuntu" 
             sudo apt-get -y remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
-            echo "apt-get remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
-                # Ubuntu
+            echo "apt-get remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"             
         elif [[ "$OSTYPE" == "darwin"* ]]; then
+            # Mac OSX
             echo "Mac OSX"
             brew remove libmicrohttpd
             brew remove liboauth
             brew remove gnutls
-            echo "brew remove libmicrohttpd liboath gnutls   "
-            # Mac OSX
+            echo "brew remove libmicrohttpd liboath gnutls"
         fi
     else
         log "Debug Run Not Uninstalling Prerequisits."
@@ -537,7 +535,6 @@ if [ $clean -eq 1 ]; then
         echo "*****************************"
     fi
     log "Current Dir: ${PWD}"
-
 
 fi
 
@@ -1014,5 +1011,6 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
            #git clone https://github.com/Agorise/c-libp2p.git 
         fi
     fi
+
 
 fi

@@ -48,6 +48,14 @@
 #define USER "test"
 #define PASSWORD "testpassword"
 
+
+    //////////////////////////////////////////////////////////////////////////////
+   //                                                                          //
+  //    comm/resetserver.c                                                    //
+ //                                                                          //
+//////////////////////////////////////////////////////////////////////////////
+
+
 const char * get_filename_ext(const char*);
 
 char * read_file(const char * filename) {
@@ -79,8 +87,12 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 	// Create a wallet address from a managed ethereum node
 	// create a smart contract for managing this users session token and documents.
 	char *body;
-	char reqData[128];
+	char *loginReqData;
+	char reqData[1028];
 	strcpy(reqData, (char *)request->binary_body);
+
+	 loginReqData = malloc(strlen(request->binary_body)*sizeof(char)+1);
+	strcpy(loginReqData,(char *)request->binary_body);
 
 	printf("Creating user %s Len:%u\n", reqData, (unsigned int) strlen(reqData));
 	y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_create_user_account %s", reqData);
@@ -88,7 +100,8 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 	pUser pusr = malloc(sizeof(User));
 	if ( json_to_user(reqData, pusr) ==0)
 	{
-		char *response_value = msprintf(CRYPTRESERVE_USER "%s", pusr->password);
+		printf("json_to_user \n\tname: %s\n\tid: %d\n\tpassword: %s\n\temail: %s\nLen:%u\n",pusr->name,pusr->id,pusr->password,pusr->email, (unsigned int) strlen(reqData));
+		char *response_value = msprintf("CRYPTRESERVE_USER%s", pusr->password);
         
     	u_map_put(response->map_header, HEADER_RESPONSE, response_value);    
 		o_free(response_value);
@@ -128,6 +141,9 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 	else
 	{
 		body= msprintf("Error Parsing JSON.");
+
+		printf("json_to_user error\n");
+	       printf("user: 	\n\tname: %s\n\tid: %d\n\tpassword: %s\n\temail: %s\nLen:%u\n",pusr->name,pusr->id,pusr->password,pusr->email, (unsigned int) strlen(reqData));
 	}
 
 	ulfius_set_string_body_response(response, 200, body);
@@ -160,12 +176,29 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
 					y_log_message(Y_LOG_LEVEL_DEBUG, "RestServerAPI::callback_user_login Incorrect Username/Passsword.");
 				else
 				{
+					char *body;
 					char usrjson[512];
 					user_to_json(pUsr, usrjson);
 					//Add a token to the db associarted to this user
 					char *token = CreateJWT( usrjson, pUsr->password);
 					char *response_value = msprintf(CRYPTRESERVE_USER ":%s", token);
-        
+        				
+					if(pUsr==NULL)
+				        {
+				                AddUser(pUsr);
+
+						//ulfius_add_cookie_to_response(response, 
+						//	"CryptReserve", lang, NULL, 0, NULL, NULL, 0, 0);
+
+                				body = msprintf("Passport User succesfully Created for User : %s!", 
+								request->binary_body);
+				        }
+				        else
+				                body = msprintf("Passport creation failed, " 
+								"try a different id + usr combo %s.", pUsr->name);
+
+				        ulfius_set_string_body_response(response, 200, body);
+ 
     					u_map_put(response->map_header, HEADER_RESPONSE, response_value);    
 					o_free(response_value);
 		
@@ -231,7 +264,6 @@ int callback_create_user_account (const struct _u_request * request, struct _u_r
     	o_free(response_value);
 
     	char *body;
-
     	User *pGetUser = (pUser)malloc(sizeof(pUser)); 
 		GetUser(pusr->id, pGetUser);
     	if(pGetUser==NULL)

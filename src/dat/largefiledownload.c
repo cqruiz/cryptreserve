@@ -8,14 +8,14 @@
 
 using namespace std; 
 #define HTTP_RANGE 0 
-//是否开启http range下载功能? 
+//http range? 
 const long seg_size = 20 * 1024 * 1024; 
 
-//文件分片阈值大小是100MB, 超过该大小的文件将会强制分片下载
+//100MB, 
 static pthread_mutex_t g_mutex = PTHREAD_MUTEX_INITIALIZER; 
 map<string, int> download_map; 
 
-//下载任务的完成情况, key是url或是文件名, val是分片数, 用于主线程监视
+//, key url, val, 
 
 class CloseInfo 
 { 
@@ -33,8 +33,8 @@ public:
 	string url; 
 }; 
 vector<CloseInfo*> closed_vec; 
-//所有打开的文件列表需要最后继中关闭, 因为/在分片下载的情况下,无法保证在所有的分片都下载完成的情况下关闭文件
-//这里必须是struct而不能是
+//, /,
+//struct
 class struct JobInfo
 { 
 	JobInfo(): fp(NULL), startPos(0), stopPos(0), ranged(false) 
@@ -44,12 +44,12 @@ class struct JobInfo
 
 
 
-//本地文件句柄
+//
 long startPos; 
 long stopPos; 
 string url; 
 bool ranged; 
-//是否需要http range下载? }; 
+//http range }; 
 static void set_JobInfo(JobInfo* ji, FILE* f, long s, long e, string u, bool r)
 { 
 	ji->fp = f; 
@@ -68,10 +68,10 @@ long get_download_file_length (const char *url)
 	curl_easy_setopt (handle, CURLOPT_AUTOREFERER, 1L); 
 	curl_easy_setopt (handle, CURLOPT_HEADER, 0L); 
 
-	//只需要header头
+	//header
 	curl_easy_setopt (handle, CURLOPT_NOBODY, 1L); 
 
-	//不需要body 
+	//body 
 	curl_easy_setopt (handle, CURLOPT_FORBID_REUSE, 1); 
 	curl_easy_setopt (handle, CURLOPT_USERAGENT, "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.143 Safari/537.36"); 
 	//user-agent 
@@ -86,17 +86,17 @@ long get_download_file_length (const char *url)
 	curl_easy_cleanup(handle); 
 	return file_len; 
 	} 
-	//每个线程在下载每个文件分片时,都会回调该函数
+	//,
 	static size_t write_data(void* ptr, size_t size, size_t nmemb, void* userdata)
 	{ 
 		JobInfo* ji = (JobInfo*) userdata; 
 		bool ranged = ji->ranged; 
 		size_t written; 
-		//要分片下载的大文件, 需要设置http range域
+		//, http range
 		if(ranged)
 			
 		{ 
-			//多线程写同一个文件, 需要加锁 
+			//, 
 			pthread_mutex_lock (&g_mutex); 
 			if(ji->startPos + size * nmemb <= ji->stopPos)
 			{ 
@@ -153,7 +153,7 @@ long get_download_file_length (const char *url)
 		} 
 		curl_easy_cleanup(curl); 
 
-		//TODO: 回馈下载分片的完成情况.... 
+		//TODO: .... 
 		string url = ji->url; 
 		pthread_mutex_lock(&g_mutex);
 		 download_map[url]--; 
@@ -162,7 +162,7 @@ long get_download_file_length (const char *url)
 		return NULL; 
 	} 
 
-	//从url列表得到一个相应的下载任务列表
+	//url
 	int get_job_queue (vector<string>& urls, vector<JobInfo*>& jobs)
 	{ 
 		FILE* fp; 
@@ -176,25 +176,25 @@ long get_download_file_length (const char *url)
 			file_len = get_download_file_length (url.c_str()); 
 		if(file_len <= 0) continue; 
 			printf("[%ld] %s\n", file_len, url.c_str()); 
-		//对应每个url, 打开一个本地文件
+		//url, 
 		const char* fn = basename((char*)url.c_str()); 
 		string full_path(fn); 
 		full_path = "./" + full_path; 
-		//设为当前路径下面
+		//
 	fp = fopen(full_path.c_str(), "wb"); 
-	//在此统一打开文件
+	//
 	if(NULL == fp) continue; 
-		//构造关闭文件向量
+		//
 	CloseInfo* ci = new CloseInfo(fp, url); 
 		closed_vec.push_back(ci); 
-		//加入全局任务监听映射
+		//
 		int additional = (file_len % seg_size == 0) ? 0 : 1; 
 	int seg_total = ranged ? (file_len < seg_size ? 1 : (file_len/seg_size + additional)) : 1; 
 	download_map[url] = seg_total; 
 	printf("[+1]%s, seg total %d\n", url.c_str(), seg_total); 
 
 #if HTTP_RANGE 
-//根据文件大小, 确定是否分片? 
+//, ? 
 if(file_len < seg_size)
 { 
 	start = 0; stop = file_len - 1; 
@@ -204,7 +204,7 @@ if(file_len < seg_size)
 	} 
 	else
 	{ 
-	//分片下载,先确定分片个数
+	//,
 	ranged = true; 
 	seg_num = (long)file_len / seg_size; 
 	printf("filesize[%ld], segsize[%ld], seg num: %ld\n", file_len, seg_size, seg_num); 
@@ -239,7 +239,7 @@ if(file_len < seg_size)
 	return 0; 
 } 
 
-int main(int argc, char* argv[])
+int run()
 { 
 	vector<string> urls_vec; 
 	urls_vec.push_back("http://dlsw.baidu.com/sw-search-sp/soft/da/17519/BaiduYunGuanjia_4.8.3.1409021519.exe");
@@ -263,7 +263,7 @@ urls_vec.push_back("http://cdimage.ubuntu.com/releases/14.04/release/ubuntu-14.0
 	urls_vec.push_back("http://cdimage.ubuntu.com/releases/14.04/release/ubuntu-14.04-server-powerpc.iso"); 
 
 	//654M 
-	//创建线程越多, cpu占用率越大, 下载效率会有一定提高
+	//, cpu, 
 	CThreadPool* pool = new CThreadPool(30); 
 	vector<JobInfo*> ji_vec; 
 	get_job_queue(urls_vec, ji_vec); 
@@ -273,7 +273,7 @@ urls_vec.push_back("http://cdimage.ubuntu.com/releases/14.04/release/ubuntu-14.0
 		JobInfo* ji = *it; 
 		pool->pool_add_job(job_process, (void*)ji); 
 	} 
-	//这个时间仅是一个粗略值,当有线程下载文件未完成时,这个worker线程是不会退出的, master线程会一直等待, 直到所有的worker线程都退出//此处更好的思路是统计所有的任务是否下载完成, 再准备退出
+	//,,worker, master, worker//, 
 	//u
 	sleep(2000 * 1000 * 1000); 
 	//2000 
@@ -301,10 +301,10 @@ urls_vec.push_back("http://cdimage.ubuntu.com/releases/14.04/release/ubuntu-14.0
 		delete pool; 
 		urls_vec.clear(); 
 		
-		//注意所含的jobinfo已经在线程处理完后就删除了,这里不用再单独删除.JobInfo对象析构的时候,会关闭打开的文件. //另外线程池销毁时,会将剩下没有处理的任务删除
+		//jobinfo,.JobInfo,. //,
 		ji_vec.clear(); 
 
-		//打开的文件,要记得全部关闭
+		//,
 		vector<CloseInfo*>::iterator cit; 
 		for(cit = closed_vec.begin(); cit != closed_vec.end(); ++cit)
 		{ 

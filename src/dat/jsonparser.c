@@ -31,8 +31,7 @@ int json_to_user(char *Json, pUser pusr)
 	json_t *json;
 	json_error_t error;
 
-	json = json_loads(Json, 0, NULL);
-
+	json = json_loads(Json, 0, &error);
 //	json = json_load_file(*Json, JSON_DISABLE_EOF_CHECK, &error);
 	if (json == NULL)
 	{
@@ -45,7 +44,7 @@ int json_to_user(char *Json, pUser pusr)
 
 	//Name
 	json_t *name = NULL;
-	name = json_object_get(json, "user");
+	name = json_object_get(json, "Name");
 	if (!name || !json_is_string(name))
 	{
 	  //status = ERROR;
@@ -57,7 +56,7 @@ int json_to_user(char *Json, pUser pusr)
 
 	//Password
         json_t *password = NULL;
-        password = json_object_get(json, "password");
+        password = json_object_get(json, "Password");
         if (!password || !json_is_string(password))
         {
           //status = ERROR;
@@ -69,7 +68,7 @@ int json_to_user(char *Json, pUser pusr)
 
 	// Email
         json_t *email = NULL;
-        email = json_object_get(json, "id");
+        email = json_object_get(json, "Email");
         if (!email || !json_is_string(email))
         {
           //status = ERROR;
@@ -79,15 +78,20 @@ int json_to_user(char *Json, pUser pusr)
 
 	// ID
         json_t *id = 0;
-	id = json_object_get(json, "id");
-        if (!id || !json_is_string(id))
+	id = json_object_get(json, "Id");
+        if (!id  || !json_is_integer(id))
         {
           //status = ERROR;
           return 4;
         }
         // id now equal to json_t object of type int.
+  
+#if __APPLE__
         //pusr->id = json_int_value(id);
-
+#else
+        pusr->id = json_integer_value(id);
+#endif
+  
 	printf("Name: %s\n", pusr->name);
 //	printf("Id: %d\n", pusr->id);
 	printf("Password: %s\n", pusr->password);
@@ -132,7 +136,7 @@ static void secure_free(void *ptr)
     ptr -= 8;
     size = *((size_t *)ptr);
 
-    guaranteed_memset(ptr, 0, size + 8);
+//    guaranteed_memset(ptr, 0, size + 8);
     free(ptr);
 }
 
