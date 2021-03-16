@@ -587,6 +587,30 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         fi
     fi
 
+    download_git_repo liboauth
+
+    echo "*****************************"
+    echo "LibOAuth Building..."
+    echo "*****************************"
+
+    if [ $debug -eq 0 ]; then
+        log "cd liboauth"
+        cd liboauth
+        log "in liboauth: ${PWD}"
+        log "cd src: ${PWD}"
+        cd src
+        ./configure
+        log "make in dir: ${PWD}"
+        make 
+        make install
+        cd ../..
+    else
+        log "Debug Mode - Not Building LibOAuth."
+    fi
+    echo "*****************************"
+    echo "Done Buidling LibOAuth."
+    echo "*****************************"
+
     # liblfds
     #echo "*****************************"
     #echo "*       Setup liblfds 	  *"
@@ -745,7 +769,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
                 cmake -DWITH_JOURNALD=off ..
             else
                 echo "Current Dir: ${PWD}"
-                cmake ..
+                cmake -DWITH_JOURNALD=off ..
             fi
             make
             sudo make install
@@ -835,6 +859,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
 
             # Fix Darwin error: incompatible pointer types passing 'int (void *, enum MHD_ValueKind, const char *, const char *)' to parameter of type 'MHD_KeyValueIterator'
             make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 UWSCFLAG=1 && sudo make install
+	        #make WEBSOCKETFLAG=-DU_DISABLE_WEBSOCKET DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 && sudo make install
 
             cd ../..
         else
@@ -904,7 +929,6 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         echo "*****************************"
         if [ $debug -eq 0 ]; then
             download_git_repo libcbor
-            #git clone https://github.com/PJK/libcbor    
         fi
         if [ -d "libcbor" ]; then
             echo "*****************************"
@@ -924,7 +948,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
             else
                 log "Debug Mode - Not Installing LibCbor."
             fi
-            cd ..
+            cd ../..
         fi
     fi
     log "Current Dir: ${PWD}"
