@@ -65,7 +65,7 @@ static char * read_file(const char * filename) {
  * main function
  * open the wbservice on port 9275
  */
-int main(int argc, char ** argv) {
+int StartWebSocket(int argc, char ** argv) {
   int ret;
   struct _u_instance instance;
   struct _static_file_config file_config;

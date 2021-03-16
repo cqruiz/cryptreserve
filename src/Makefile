@@ -13,14 +13,15 @@ LIBS=-L/usr/local/lib -lc  -lgnutls -lulfius -lorcania -lssl -ljwt -ljansson -lc
 IDIR = ../include
 CC=gcc
 CFLAGS+=-I$(IDIR) -g
-DEPS = ../include/restserver.h ../include/u_example.h ../include/queue.h  ../include/dbcache.h ../include/jsonparser.h ../include/cryptreservesecureapi.h ../include/jwthelper.h  ../include/static_file_callback.h
+DEPS = ../include/u_example.h ../include/queue.h  ../include/dbcache.h ../include/jsonparser.h ../include/cryptreservesecureapi.h ../include/jwthelper.h  ../include/static_file_callback.h
 ODIR=../obj
 LDIR=lib
 LDFLAGS+=-pthread
 SOURCES=cryptreserveserver.c comm/restserver.c lib/queue.c dat/dbcache.c dat/jsonparser.c comm/cryptreservesecureapi.c encr/jwthelper.c comm/websocket.c comm/curlipfsclient.c
 OBJ=$(SOURCES:.c=.o)
-OBJECTS= restserver.o queue.o cryptreserveserver.o dbcache.o jsonparser.o cryptreservesecureapi.o jwthelper.o curlipfsclient.o
-# webserver.o
+
+OBJECTS= restserver.o queue.o cryptreserveserver.o dbcache.o jsonparser.o cryptreservesecureapi.o jwthelper.o curlipfsclient.o webserver.o
+
 OBJS = $(patsubst %,$(ODIR)/%,$(OBJECTS))
 EXE=../bin/CryptReserve
 

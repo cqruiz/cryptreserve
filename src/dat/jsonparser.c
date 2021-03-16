@@ -85,10 +85,15 @@ int json_to_user(char *Json, pUser pusr)
           return 4;
         }
         // id now equal to json_t object of type int.
+  
+#if __APPLE__
+        //pusr->id = json_int_value(id);
+#else
         pusr->id = json_integer_value(id);
-
+#endif
+  
 	printf("Name: %s\n", pusr->name);
-	printf("Id: %d\n", pusr->id);
+//	printf("Id: %d\n", pusr->id);
 	printf("Password: %s\n", pusr->password);
 	if (email!=0) printf("Email: %s\n", pusr->email);
 
