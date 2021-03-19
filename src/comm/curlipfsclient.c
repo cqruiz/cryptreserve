@@ -90,7 +90,7 @@ void ProcessRequest(void *argv)
     }
 
     DestructQueue(pQ);
-    return (EXIT_SUCCESS);	
+    //return (EXIT_SUCCESS);	
 }
 
 

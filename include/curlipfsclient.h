@@ -26,6 +26,7 @@ typedef struct {
 
 int StartCurlServer(CurlThreadData *);
 void ProcessRequest( void *);
+void SendIPFSData(DATA *data);
 //static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp);
 void read_callback();
 
