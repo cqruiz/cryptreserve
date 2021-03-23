@@ -1,5 +1,3 @@
-#include "../../include/base64decode.h"
-
 //Decodes Base64
 #include <stdio.h>
 #include <string.h>
@@ -7,6 +5,9 @@
 #include <openssl/evp.h>
 #include <stdint.h>
 #include <assert.h>
+//#include "../../include/base64decode.h"
+
+#include "base64decode.h"
 
 size_t calcDecodeLength(const char* b64input) { //Calculates the length of a decoded string
 	size_t len = strlen(b64input),

@@ -1,6 +1,7 @@
+
 show_help() {
     echo "Usage:
-    
+
     ${0##*/}  [-h][-c][-v][-d][-r][-l LIBRARY]
 
 Options:
@@ -9,24 +10,24 @@ Options:
         display thiws help and exit
 
     -c, --clean
-        clean the libraries and dependancies 
-        
+        clean the libraries and dependancies
+
     -v, --verbose
         verbose
-    
+
     -b, --build
-        build the libraries and dependencies 
+        build the libraries and dependencies
 
     -d, --debug
-        debug run the install script libraries and dependencies 
+        debug run the install script libraries and dependencies
 
     -r, --remove
-        remove libraries and dependencies 
+        remove libraries and dependencies
 
     -l, --lib
         rebuild particular library
         {glewlwyd,hoel,json-c,libcbor,linconfig,libjwt,openssl,orcania,ulfius,yder}
-"    
+"
 }
 
 log()
@@ -77,24 +78,24 @@ while getopts "h?vcbdrl:" opt; do
         show_help
         exit 0
         ;;
-    v)  
+    v)
         verbose=1
         ;;
-    c)  
+    c)
         clean=1
         all=0
         ;;
-    b) 
+    b)
         build=1
         all=0
         ;;
-    d) 
+    d)
         debug=1
         ;;
-    r) 
+    r)
         remove=1
         ;;
-    l)  
+    l)
         library=$OPTARG
         ;;
     esac
@@ -137,11 +138,17 @@ fi
 ##########################################
 
 if [ ! -d tools ]; then
-    echo "Create Tools directory." 
+    echo "Create Tools directory."
     mkdir tools
 fi
+
+echo "*****************************"
+echo "cd into tools dir.."
+echo "*****************************"
 # run under the tools dir.
 cd tools
+echo `pwd`
+
 
 #######################################################################################
 ################################   Cleaning Libraries  ################################
@@ -153,7 +160,7 @@ if [ $clean -eq 1 ]; then
     ###########################################
     #Conditional Clean - all default, -c clean#
     ###########################################"
-    
+
     # Uninstall PreReqs
     echo "*****************************"
     echo "*	 Uninstall Prerequisites  *"
@@ -163,9 +170,9 @@ if [ $clean -eq 1 ]; then
 
         if [[ "$OSTYPE" == "linux-gnu" ]]; then
             # Ubuntu
-            echo  "Ubuntu" 
+            echo  "Ubuntu"
             sudo apt-get -y remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev
-            echo "apt-get remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"             
+            echo "apt-get remove autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
         elif [[ "$OSTYPE" == "darwin"* ]]; then
             # Mac OSX
             echo "Mac OSX"
@@ -178,104 +185,11 @@ if [ $clean -eq 1 ]; then
         log "Debug Run Not Uninstalling Prerequisits."
     fi
 
-    # Uninstall Orcania
-    echo "*******************************************"
-    echo "*  Check/Uninstall Orcania - C Utilities  *"
-    log "*   Current Dir: ${PWD}  *"
-    echo "*******************************************"
- 
-    if [ -d orcania ]; then
-        echo "*****************************"
-        echo "*    Uninstalling orcania   *"
-        echo "*****************************"
-        if [ $debug -eq 0 ]; then
-            cd orcania
-            make clean
-            cd src
-            sudo make uninstall	
-            log " ** make clean **"
-            make clean
-            cd ../..
-            log ${PWD}
-            if [ $remove -eq 1 ]; then
-                echo "****-> Removing all of Orcania <-****"
-                rm -rf orcania
-            fi
-        fi
-        echo "*****************************"
-        echo "*      orcania cleaned      *"
-        echo "*****************************"
-    else
-        log "Debug Mode Not Unistalling Ocania"
-    fi
-
-    #Uninstall Yder
-    echo "***********************************"
-    echo "* Check/Uninstall Yder - C Logger *"
-    log "* Current Dir: ${PWD} *"
-    echo "***********************************"
-    
-    if [ -d yder ]; then
-        echo "*****************************"
-        echo "*     Uninstalling yder     *"
-        echo "*****************************"
-        if [ $debug -eq 0 ]; then
-            cd yder/src
-            sudo make uninstall	
-            echo " ** make clean **"
-            make clean
-            cd ../..
-            if [ $remove -eq 1 ]; then
-                echo "**** Removing all of Yder ****"
-                rm -rf yder
-            fi
-        else
-            log "Debug Run Not Uninstalling"
-        fi
-        echo "*****************************"
-        echo "*      yder cleaned         *"
-        echo "*****************************"
-    fi
-
-    #Uninstall hoel
-    echo "*****************************"
-    echo "*    Check/Uninstall Clone hoel   *"
-    log "*    Current Dir: ${PWD}    *"
-    echo "*****************************"
-
-    if [ -d hoel ]; then
-        echo "*****************************"
-        echo "*     Uninstalling hoel     *"
-        echo "*****************************"
-        if [ $debug -eq 0 ]; then
-            cd hoel
-            if [ -d build ]; then
-                cd build
-                echo " ** make clean build **"
-                make clean
-                make uninstall
-                cd ..
-            fi
-            echo " ** make clean **"
-            make clean
-            cd ..
-            if [ $remove -eq 1 ]; then
-                echo "****   Removing all of Hoel   ****"
-                sudo rm -rf hoel
-            fi
-        else
-            log "Debug Run Not Uninstalling"
-        fi
-        echo "*****************************"
-        echo "*       hoel cleaned        *"
-        echo "*****************************"
-    fi
-
     #Uninstall ulfius
     echo "*****************************"
     echo "*  Check/Uninstall Ulfius   *"
     log "*    Current Dir: ${PWD}    *"
-    echo "*****************************"
+    echo "****************
 
     if [ -d ulfius ]; then
         cd ulfius
@@ -283,7 +197,7 @@ if [ $clean -eq 1 ]; then
         echo "*    Uninstalling Ulfius    *"
         echo "*****************************"
         if [ $debug -eq 0 ]; then
-            sudo make uninstall	
+            sudo make uninstall
             echo " ** make clean **"
             make clean
             cd ..
@@ -319,7 +233,7 @@ if [ $clean -eq 1 ]; then
             make clean
             cd ..
             if [ -d build ]; then
-                cd build 
+                cd build
                 log "** make clean **"
                 make clean
                 echo "*****************************"
@@ -402,18 +316,18 @@ if [ $clean -eq 1 ]; then
         echo "*****************************"
         log "Done with Uninstall - now in tools directory: ${PWD}"
     fi
-   
+
     echo "***********************************"
     echo "*   Check/Uninstall JSON-C        *"
     echo "*   Current Dir: ${PWD}           *"
     echo "***********************************"
-            
+
     echo "*****************************"
     echo "json-c cleaning..."
     echo "*****************************"
 
     if [ $debug -eq 0 ]; then
-        
+
         if [ -d json-c ]; then
             cd json-c
             log "Current Dir: ${PWD}"
@@ -431,7 +345,7 @@ if [ $clean -eq 1 ]; then
         log "* Current Dir: ${PWD} *"
         echo "*****************************"
     else
-        
+
         log "Not Cleaning/Uninstalling, Debug mode only."
     fi
 
@@ -494,13 +408,13 @@ if [ $clean -eq 1 ]; then
         echo "*****************************"
         echo "libjwt clean completed."
         echo "*****************************"
-            
+
     else
         echo "*****************************"
         echo "libjwt uninstallation error!"
         echo "*****************************"
     fi
-    
+
     #openssl
     echo "*****************************"
     echo "*    Uninstall openssl      *"
@@ -510,7 +424,7 @@ if [ $clean -eq 1 ]; then
         echo "*     openssl clean...      *"
         echo "*****************************"
         if [ $debug -eq 0 ]; then
-            cd openssl 
+            cd openssl
             echo "*****************************"
             echo "*    openssl uninstall...   *"
             log "* Current Dir: ${PWD}"
@@ -531,12 +445,144 @@ if [ $clean -eq 1 ]; then
         echo "*****************************"
     else
         echo "*****************************"
-        echo "openssl doesn't exist - Need to install!"
+        echo "openssl doesn\'t exist - Need to install!"
         echo "*****************************"
     fi
     log "Current Dir: ${PWD}"
 
+    # Uninstall Orcania
+    echo "*******************************************"
+    echo "*  Check/Uninstall Orcania - C Utilities  *"
+    log "*   Current Dir: ${PWD}  *"
+    echo "*******************************************"
+
+    if [ -d orcania ]; then
+        echo "*****************************"
+        echo "*    Uninstalling orcania   *"
+        echo "*****************************"
+        if [ $debug -eq 0 ]; then
+            cd orcania
+            make clean
+            cd src
+            sudo make uninstall
+            log " ** make clean **"
+            make clean
+            cd ../..
+            log ${PWD}
+            if [ $remove -eq 1 ]; then
+                echo "****-> Removing all of Orcania <-****"
+                rm -rf orcania
+            fi
+        fi
+        echo "*****************************"
+        echo "*      orcania cleaned      *"
+        echo "*****************************"
+    else
+        log "Debug Mode Not Unistalling Ocania"
+    fi
+
+    #Uninstall Yder
+    echo "***********************************"
+    echo "* Check/Uninstall Yder - C Logger *"
+    log "* Current Dir: ${PWD} *"
+    echo "***********************************"
+
+    if [ -d yder ]; then
+        echo "*****************************"
+        echo "*     Uninstalling yder     *"
+        echo "*****************************"
+        if [ $debug -eq 0 ]; then
+            cd yder/src
+            sudo make uninstall
+            echo " ** make clean **"
+            make clean
+            cd ../..
+            if [ $remove -eq 1 ]; then
+                echo "**** Removing all of Yder ****"
+                rm -rf yder
+            fi
+        else
+            log "Debug Run Not Uninstalling"
+        fi
+        echo "*****************************"
+        echo "*      yder cleaned         *"
+        echo "*****************************"
+    fi
+
+    #Uninstall hoel
+    echo "*****************************"
+    echo "*    Check/Uninstall Clone hoel   *"
+    log "*    Current Dir: ${PWD}    *"
+    echo "*****************************"
+
+    if [ -d hoel ]; then
+        echo "*****************************"
+        echo "*     Uninstalling hoel     *"
+        echo "*****************************"
+        if [ $debug -eq 0 ]; then
+            cd hoel
+            if [ -d build ]; then
+                cd build
+                echo " ** make clean build **"
+                make clean
+                make uninstall
+                cd ..
+            fi
+            echo " ** make clean **"
+            make clean
+            cd ..
+            if [ $remove -eq 1 ]; then
+                echo "****   Removing all of Hoel   ****"
+                sudo rm -rf hoel
+            fi
+        else
+            log "Debug Run Not Uninstalling"
+        fi
+        echo "*****************************"
+        echo "*       hoel cleaned        *"
+        echo "*****************************"
+    fi
 fi
+
+###  INSTALLATION ###
+
+# PreReqs
+echo "*****************************"
+echo "*	     Install Pre Requisits 	  *"
+echo "*****************************"
+#echo "apt-get autoconf automake libtool libmicrohttpd-dev sqlite3 libsqlite3-dev default-libmysqlclient-dev libpq-dev libgnutls-dev libconfig-dev libssl-dev libldap2-dev liboath-dev"
+sudo apt-get update
+
+REQUIRED_PKGS="automake libtool sqlite3 openssl libpq-dev libsqlite3-dev libpq-dev libconfig-dev libssl-dev libldap2-dev liboath-dev libsystemd-dev libgnutls28-dev libmicrohttpd-dev libcurl4-gnutls-dev"
+
+for REQUIRED_PKG in $REQUIRED_PKGS; do
+	PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG|grep "install ok installed")
+	echo Checking for $REQUIRED_PKG: $PKG_OK
+	if [ "" = "$PKG_OK" ]; then
+		echo "Missing $REQUIRED_PKG. Installing $REQUIRED_PKG."
+		sudo apt-get -y install $REQUIRED_PKG
+	else
+		echo "$REQUIRED_PKG alread installed.  Skipping $REQUIRED_PKG."
+	fi
+done
+
+#sudo apt-get -y install --reinstall -dev
+echo "*****************************"
+echo "*	       autoconf		  *"
+echo "*****************************"
+sudo apt-get -y install autoconf pkg-config
+
+# liblfds
+echo "*****************************"
+echo "*       Setup liblfds 	  *"
+echo "*****************************"
+if [ ! -d "liblfds" ]; then
+	echo "*************************************************************"
+	echo "* Download liblfds (https://github.com/liblfds/liblfds.git) *"
+	echo "*************************************************************"
+	#git clone https://github.com/liblfds/liblfds.git
+fi
+
 
 #######################################################################################
 ################################  Building Libraries  #################################
@@ -562,7 +608,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     echo "*****************************"
     echo "*	       Prerequisits	      *"
     echo "*****************************"
-    
+
     if [ $debug -eq 0 ]; then
 
         if [[ "$OSTYPE" == "linux-gnu" ]]; then
@@ -598,7 +644,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         cd src
         ./configure
         log "make in dir: ${PWD}"
-        make 
+        make
         make install
         cd ../..
     else
@@ -619,7 +665,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     #	git clone https://github.com/liblfds/liblfds.git
     #fi
 
-    # Install liblfds 
+    # Install liblfds
     #echo "*****************************"
     #echo "Install liblfds"
     #echo "*****************************"
@@ -646,7 +692,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         echo "json-c installation required..."
         echo "*****************************"
         download_git_repo JSON-C
-            
+
         if [ $debug -eq 0 ]; then
             cd json-c
             log "Current Dir: ${PWD}"
@@ -654,7 +700,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
             echo "*****************************"
             echo "json-c building..."
             echo "*****************************"
-            ./configure 
+            ./configure
             make
             log " ** make install **"
             sudo make install
@@ -685,12 +731,12 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         echo "*****************************"
         echo "openssl installation required..."
         echo "*****************************"
-        cd openssl 
+        cd openssl
         echo "*****************************"
         echo "openssl building..."
         log "* Current Dir: ${PWD}"
         echo "*****************************"
-       ## ./config 
+       ## ./config
        ## make
         echo "*** make install_sw no man *** "
        ## sudo make install_sw
@@ -703,20 +749,20 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     echo "*****************************"
     log "Current Dir: ${PWD}"
 
-    # libjwt 
+    # libjwt
     echo "*****************************"
     echo "Install libjwt"
     echo "*****************************"
-        
+
     download_git_repo libjwt
-    
+
     echo "*****************************"
     echo "libjwt building..."
     echo "*****************************"
 
     if [ -d libjwt ]; then
         if [ $debug -eq 0 ]; then
-            cd libjwt 
+            cd libjwt
             log "Current Dir: ${PWD}"
             autoreconf -i
             ./configure OPENSSL_CFLAGS=" " OPENSSL_LIBS="-lssl -lcrypto"
@@ -727,7 +773,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         else
             log "Debug Mode - Not Installing."
         fi
-        
+
         echo "*****************************"
         echo "libjwt build completed."
         echo "*****************************"
@@ -744,16 +790,16 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     echo "Install Orcania C Utilities"
     echo "Current Dir: ${PWD}"
     echo "*****************************"
-    
+
     download_git_repo orcania
-    
+
     if [ -d orcania ]; then
         echo "*****************************"
         echo "Orcania building..."
         echo "*****************************"
         if [ $debug -eq 0 ]; then
             cd orcania
-           
+
             echo "Current Dir: ${PWD}"
             echo " ** cmake/make install **"
 
@@ -774,14 +820,14 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         else
             echo "Debug Mode - Not Installing."
         fi
-          
+
         echo "*****************************"
         echo "Orcania build completed."
         echo "*****************************"
     fi
-        
+
     echo "Current Dir: ${PWD}"
-    
+
     download_git_repo yder
 
     # Install Yder for logging
@@ -828,7 +874,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     echo "*****************************"
     echo "Install Ulfius"
     echo "*****************************"
-    
+
     download_git_repo ulfius
 
     if [ -d ulfius ]; then
@@ -843,7 +889,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
                 mkdir build
                 log "Current Dir: ${PWD}"
             fi
-            
+
             cd build
             log "Current Dir: ${PWD}"
 
@@ -862,7 +908,7 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         else
             log "Debug Mode - Not Installing."
         fi
-        
+
         echo "*****************************"
         echo "Ulfius build completed."
         echo "*****************************"
@@ -875,7 +921,6 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
     echo "*****************************"
 
     download_git_repo hoel
-
     if [ -d hoel ]; then
         echo "*****************************"
         echo "Hoel building..."
@@ -902,8 +947,8 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
             fi
 
             log $OSTYPE
-            
-            make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 DISABLE_JOURNALD=1 
+
+            make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 DISABLE_JOURNALD=1
             sudo make install
             cd ../..
         else
@@ -914,6 +959,26 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         echo "*****************************"
     fi
     log "Current Dir: ${PWD}"
+
+
+    # Install Ulfius
+    echo "*****************************"
+    echo "Install Ulfius"
+    echo "*****************************"
+
+    if [ -d "ulfius" ]; then
+    	echo "*****************************"
+    	echo "Ulfius building..."
+    	echo "*****************************"
+    	cd ulfius/src
+    	make clean
+    	#sudo make uninstall
+    	make DISABLE_MARIADB=1 DISABLE_POSTGRESQL=1 && sudo make install
+    	cd ../..
+    	echo "*****************************"
+    	echo "Ulfius build completed."
+    	echo "*****************************"
+    fi
 
     #Install libcbor
     echo "*****************************"
@@ -1008,9 +1073,65 @@ if [[ ( "$all" -eq 1 || "$build" -eq 1 ) ]]; then
         echo "*****************************"
         if [ $debug -eq 0 ]; then
             download_git_repo c-libp2p
-           #git clone https://github.com/Agorise/c-libp2p.git 
+           #git clone https://github.com/Agorise/c-libp2p.git
         fi
     fi
 
+  #Install libMBA
+  echo "*****************************"
+  echo "Install LibMBA"
+  echo "*****************************"
 
+  if [ ! -d "libmba" ]; then
+  	echo "*****************************"
+  	echo "Git clone LibMBA."
+  	echo "*****************************"
+  	git clone https://github.com/innerout/libmba.git
+  fi
+  if [ -d "libmba" ]; then
+  	echo "*****************************"
+  	echo "LibMBA Building..."
+  	echo "*****************************"
+  	cd libmba
+  	cmake ..
+  	cd ../src
+  	make
+  	echo "*****************************"
+  	echo "LibMBA Build Completed."
+  	echo "*****************************"
+  	sudo make install
+  	cd ../..
+  	echo "*****************************"
+  	echo "LibMBA Installation Completed."
+  	echo "*****************************"
+  fi
+
+  #Install Solidity
+  echo "*****************************"
+  echo "Install Solidity"
+  echo "*****************************"
+
+  if [ ! -d "solidity" ]; then
+  	echo "*****************************"
+  	echo "Git clone Solidity."
+  	echo "*****************************"
+  	git clone --recursive https://github.com/ethereum/solidity.git
+  	echo "*****************************"
+  	echo "Dependencies: Boost..."
+  	echo "*****************************"
+  	cd solidity
+  	./scripts/install_deps.sh
+
+  	echo "*****************************"
+  	echo "Solidity Building..."
+  	echo "*****************************"
+  	mkdir build
+  	cd build
+  	cmake .. && make
+  	cd ../..
+  	echo "*****************************"
+  	echo "Done Buidling Solidity."
+  	echo "*****************************"
+
+  fi
 fi

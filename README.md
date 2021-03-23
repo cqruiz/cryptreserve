@@ -1,5 +1,28 @@
-# [SOVID - Sovereign Id](https://www.blockchainbpi.com)
-SOVID is a server exposing IPFS using Blockchain for sovereign identification and permissioning and exposed vias a RestAPI.
+
+# [CryptReserve SOVID - Sovereign Id](https://www.blockchainbpi.com)
+CryptReserve is a server written in C exposing IPFS using Blockchain for  permissioning and exposed via a RestAPI and communicating with IPFS and Geth using curl rpc.  
+
+  ERC 1155  
+    User Profile Contract
+      User creates a Profile Contract that links to the Passport IPFS CID file.
+      This ERC 1155 distributes burnable tokens to decrypt and view IPFS Attributes
+      - CID
+      - Map [WalletId, Scopes(CIDS-IPFSAttributes)] - Permissions
+      - CIDList (IPFS Attributes) (Coins/Personal Information Files/Permissioned/Encrypted)
+        - CID is 21?
+          - Wallet Ids (Permissioned to view)
+        - CID is Verified Investor (>250k/yr)
+          - Wallet Ids (Permissioned to view)
+
+  IPFS    
+    User
+      - CID
+      - WalletId
+    Attributes
+      - CID
+      - Over 21 CID (Driver's License DMV)
+      - Verify Mobile Number + MACID for GPS Verification
+      - Verified CID ()
 
 OAuth 2.0
 OpenID
@@ -14,17 +37,19 @@ Expo/React
 Run install.sh (./install.sh)
 
 ### Dependenices
-* Linux Server (AWS)
+* Linux or Mac OS
 * IPFS
-* C++
-* Json-lib
-* Jansson
-* libulfius-dev
-* OpenSSL
-* LibOrcania-dev
-* Libjwt
-* Hoel
+* C - gcc
+* Jansson - library for encoding, decoding and manipulating JSON data
+* Ulfius - libulfius-dev - HTTP Framework for REST Applications in C
+* Orcania - LibOrcania-dev - Potluck of different fctns shared among C programs
+* Hoel - Database (SQLIte3) abstraction library written in C.
 * Yder - Logging library for C applications
-* glewlwyd
-* libgnutls28-dev
-* JWT
+* Glewlwyd - OAuth2
+* OpenSSL
+* Libjwt
+* Libgnutls28-dev
+* Libssl
+* Libcrypto
+* Libsqlite3
+* Libcurl

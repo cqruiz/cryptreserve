@@ -1,4 +1,5 @@
 #include "../../include/jwthelper.h"
+#include <string.h>
 #include <time.h>
 
 void GetIatExp(char* iat, char* exp, int time_size);

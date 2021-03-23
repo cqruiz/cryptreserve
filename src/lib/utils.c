@@ -1,4 +1,7 @@
-#include "../../include/utils.h"
+#ifndef UTILS_HEADER_FILE
+#define UTILS_HEADER_FILE
+//#include "../../include/utils.h"
+#include "utils.h"
 
 char* concat(const char *s1, const char *s2)
 {
@@ -10,3 +13,4 @@ char* concat(const char *s1, const char *s2)
     memcpy(result + len1, s2, len2 + 1); // +1 to copy the null-terminator
     return result;
 }
+#endif

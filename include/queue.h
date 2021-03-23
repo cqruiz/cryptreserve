@@ -3,9 +3,10 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
+#include <semaphore.h> 
 
 //#include "liblfds710.h"
 
@@ -19,35 +20,53 @@ struct test_data
 };
 
 typedef enum eCmd
-{addfile,getfile,uploadfile} Cmd;
+{addfile,getfile,pinfile,unpinfile,uploadfile,createprofile} eCmd;
+//typedef enum eCmd Cmd;
+extern enum eCmd Cmd;
+
 
 /* a link in the queue, holds the info and point to the next Node*/
-typedef struct {
+typedef struct Data_t{
     int number;
-    Cmd cmd;
+    eCmd cmd;
     char name[256];
     char addr[256];
     char CID[256];
-} DATA;
+    FILE *fpData;
+    char file[256];
+    char path[256];
+    char pathfile[256];
+    int filesize;
+} Data_t;
+
+//typedef struct Data_t *DATA;
+extern struct DATA_t *pData;
 
 typedef struct Node_t {
-    DATA data;
+    Data_t *data;
     struct Node_t *prev;
-} NODE;
+} Node_t;
+
+//typedef struct Node_t *NODE;
+extern struct Node_t * NodePtr;
 
 /* the HEAD of the Queue, hold the amount of node's that are in the queue*/
-typedef struct Queue {
-    NODE *head;
-    NODE *tail;
+typedef struct Queue_t {
+    Node_t * head;
+    Node_t * tail;
     int size;
     int limit;
     bool running;
-} Queue;
+    sem_t *newmsg_mutx;
+} Queue_t;
 
-Queue *ConstructQueue(int limit);
-void DestructQueue(Queue *queue);
-int Enqueue(Queue *pQueue, NODE *item);
-NODE *Dequeue(Queue *pQueue);
-int isEmpty(Queue* pQueue);
+//typedef struct Queue_t *QUEUE;
+extern struct Queue_t* QueuePtr;
+
+Queue_t* ConstructQueue(int limit);
+void DestructQueue();
+int Enqueue(Node_t *item);
+Node_t *Dequeue();
+int isEmpty();
 
 #endif

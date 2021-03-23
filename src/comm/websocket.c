@@ -1,11 +1,11 @@
 /**
- * 
+ *
  * Ulfius Framework example program
- * 
+ *
  * This example program implements a websocket
- * 
+ *
  * Copyright 2017 Nicolas Mora <mail@babelouest.org>
- * 
+ *
  * License MIT
  *
  */
@@ -17,9 +17,12 @@
 #include <sys/stat.h>
 
 #include <ulfius.h>
-#include <u_example.h>
 
-#include "../../include/static_file_callback.h"
+#include "../../include/ulfiusexample.h"
+#include "../../include/staticfilecallback.h"
+
+//#include "ulfiusexample.h"
+//#include "staticfilecallback.h"
 
 #define PORT 9275
 #define PREFIX_WEBSOCKET "/websocket"
@@ -27,7 +30,7 @@
 
 #if defined(U_DISABLE_WEBSOCKET)
 
-int main() {
+int mainfn() {
   fprintf(stderr, "Websocket not supported, please recompile ulfius with websocket support\n");
   return 1;
 }
@@ -66,13 +69,14 @@ static char * read_file(const char * filename) {
  * open the wbservice on port 9275
  */
 int StartWebSocket(int argc, char ** argv) {
+
   int ret;
   struct _u_instance instance;
   struct _static_file_config file_config;
   char * cert_file = NULL, * key_file = NULL;
-  
+
   y_init_logs("websocket_example", Y_LOG_MODE_CONSOLE, Y_LOG_LEVEL_DEBUG, NULL, "Starting websocket_example");
-  
+
   file_config.mime_types = o_malloc(sizeof(struct _u_map));
   u_map_init(file_config.mime_types);
   u_map_put(file_config.mime_types, ".html", "text/html");
@@ -90,20 +94,20 @@ int StartWebSocket(int argc, char ** argv) {
   file_config.url_prefix = PREFIX_STATIC;
   file_config.map_header = o_malloc(sizeof(struct _u_map));
   u_map_init(file_config.map_header);
-  
+
   if (ulfius_init_instance(&instance, PORT, NULL, NULL) != U_OK) {
     y_log_message(Y_LOG_LEVEL_ERROR, "Error ulfius_init_instance, abort");
     return(1);
   }
-  
+
   u_map_put(instance.default_headers, "Access-Control-Allow-Origin", "*");
-  
+
   // Endpoint list declaration
   ulfius_add_endpoint_by_val(&instance, "GET", PREFIX_WEBSOCKET, NULL, 0, &callback_websocket, NULL);
   ulfius_add_endpoint_by_val(&instance, "GET", PREFIX_WEBSOCKET, "/echo", 0, &callback_websocket_echo, NULL);
   ulfius_add_endpoint_by_val(&instance, "GET", PREFIX_WEBSOCKET, "/file", 0, &callback_websocket_file, NULL);
   ulfius_add_endpoint_by_val(&instance, "GET", PREFIX_STATIC, "*", 0, &callback_static_file, &file_config);
-  
+
   // Start the framework
   if (argc > 3 && 0 == o_strcmp(argv[1], "-https")) {
     key_file = read_file(argv[2]);
@@ -119,23 +123,23 @@ int StartWebSocket(int argc, char ** argv) {
   } else {
     ret = ulfius_start_framework(&instance);
   }
-  
+
   if (ret == U_OK) {
     y_log_message(Y_LOG_LEVEL_INFO, "Start framework on port %d %s", instance.port, (argc > 1 && 0 == o_strcmp(argv[1], "-https"))?"https mode":"http mode");
-    
+
     // Wait for the user to press <enter> on the console to quit the application
     getchar();
   } else {
     y_log_message(Y_LOG_LEVEL_ERROR, "Error starting framework");
   }
   y_log_message(Y_LOG_LEVEL_INFO, "End framework");
-  
+
   ulfius_stop_framework(&instance);
   ulfius_clean_instance(&instance);
   u_map_clean_full(file_config.mime_types);
   u_map_clean_full(file_config.map_header);
   y_close_logs();
-  
+
   return 0;
 }
 
@@ -169,14 +173,14 @@ void websocket_manager_callback(const struct _u_request * request,
   if (websocket_manager_user_data != NULL) {
     y_log_message(Y_LOG_LEVEL_DEBUG, "websocket_manager_user_data is %s", websocket_manager_user_data);
   }
-  
+
   // Send text message without fragmentation
   if (ulfius_websocket_wait_close(websocket_manager, 2000) == U_WEBSOCKET_STATUS_OPEN) {
     if (ulfius_websocket_send_message(websocket_manager, U_WEBSOCKET_OPCODE_TEXT, o_strlen("Message without fragmentation from server"), "Message without fragmentation from server") != U_OK) {
       y_log_message(Y_LOG_LEVEL_ERROR, "Error send message without fragmentation");
     }
   }
-  
+
   // Send text message with fragmentation for ulfius clients only, browsers seem to dislike fragmented messages
   if (o_strncmp(u_map_get(request->map_header, "User-Agent"), U_WEBSOCKET_USER_AGENT, o_strlen(U_WEBSOCKET_USER_AGENT)) == 0 &&
       ulfius_websocket_wait_close(websocket_manager, 2000) == U_WEBSOCKET_STATUS_OPEN) {
@@ -184,21 +188,21 @@ void websocket_manager_callback(const struct _u_request * request,
       y_log_message(Y_LOG_LEVEL_ERROR, "Error send message with fragmentation");
     }
   }
-  
+
   // Send ping message
   if (ulfius_websocket_wait_close(websocket_manager, 2000) == U_WEBSOCKET_STATUS_OPEN) {
     if (ulfius_websocket_send_message(websocket_manager, U_WEBSOCKET_OPCODE_PING, 0, NULL) != U_OK) {
       y_log_message(Y_LOG_LEVEL_ERROR, "Error send ping message");
     }
   }
-  
+
   // Send binary message without fragmentation
   if (ulfius_websocket_wait_close(websocket_manager, 2000) == U_WEBSOCKET_STATUS_OPEN) {
     if (ulfius_websocket_send_message(websocket_manager, U_WEBSOCKET_OPCODE_BINARY, o_strlen("Message without fragmentation from server"), "Message without fragmentation from server") != U_OK) {
       y_log_message(Y_LOG_LEVEL_ERROR, "Error send binary message without fragmentation");
     }
   }
-  
+
   y_log_message(Y_LOG_LEVEL_DEBUG, "Closing websocket_manager_callback");
 }
 
@@ -260,7 +264,7 @@ void websocket_incoming_file_callback (const struct _u_request * request,
 int callback_websocket (const struct _u_request * request, struct _u_response * response, void * user_data) {
   char * websocket_user_data = o_strdup("my_user_data");
   int ret;
-  
+
   if ((ret = ulfius_set_websocket_response(response, NULL, NULL, &websocket_manager_callback, websocket_user_data, &websocket_incoming_message_callback, websocket_user_data, &websocket_onclose_callback, websocket_user_data)) == U_OK) {
     return U_CALLBACK_CONTINUE;
   } else {
@@ -271,7 +275,7 @@ int callback_websocket (const struct _u_request * request, struct _u_response * 
 int callback_websocket_echo (const struct _u_request * request, struct _u_response * response, void * user_data) {
   char * websocket_user_data = o_strdup("my_user_data");
   int ret;
-  
+
   y_log_message(Y_LOG_LEVEL_DEBUG, "Client connected to echo websocket");
   if ((ret = ulfius_set_websocket_response(response, NULL, NULL, NULL, NULL, &websocket_echo_message_callback, websocket_user_data, &websocket_onclose_callback, websocket_user_data)) == U_OK) {
     return U_CALLBACK_CONTINUE;
@@ -282,7 +286,7 @@ int callback_websocket_echo (const struct _u_request * request, struct _u_respon
 
 int callback_websocket_file (const struct _u_request * request, struct _u_response * response, void * user_data) {
   int ret;
-  
+
   if ((ret = ulfius_set_websocket_response(response, NULL, NULL, &websocket_manager_file_callback, NULL, &websocket_incoming_file_callback, NULL, &websocket_onclose_file_callback, NULL)) == U_OK) {
     return U_CALLBACK_CONTINUE;
   } else {

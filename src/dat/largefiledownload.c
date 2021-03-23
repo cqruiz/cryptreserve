@@ -17,10 +17,7 @@ map<string, int> download_map;
 
 //, key url, val, 
 
-class CloseInfo 
-{ 
-	public: 
-	CloseInfo(FILE* f, string& s): fp(f), url(s) 
+	//CloseInfo(FILE* f, string& s): fp(f), url(s) 
 {
 
 } 
@@ -93,8 +90,7 @@ long get_download_file_length (const char *url)
 		bool ranged = ji->ranged; 
 		size_t written; 
 		//, http range
-		if(ranged)
-			
+		if(ranged)			
 		{ 
 			//, 
 			pthread_mutex_lock (&g_mutex); 
@@ -103,21 +99,21 @@ long get_download_file_length (const char *url)
 				fseek(ji->fp, ji->startPos, SEEK_SET); 
 				written = fwrite(ptr, size, nmemb, ji->fp); 
 				ji->startPos += size * nmemb; 
-				} 
-				else
-					{ 
-					fseek(ji->fp, ji->startPos, SEEK_SET); 
-					written = fwrite(ptr, 1, ji->stopPos - ji->startPos + 1, ji->fp); 
+			} 
+			else
+			{ 
+				fseek(ji->fp, ji->startPos, SEEK_SET); 
+				written = fwrite(ptr, 1, ji->stopPos - ji->startPos + 1, ji->fp); 
 				ji->startPos = ji->stopPos; 
-					} 
-					pthread_mutex_unlock (&g_mutex); 
-					}
-					else
-						{ 
-						written = fwrite(ptr, size, nmemb, ji->fp); 
-					} 
-						return written; 
-					} 
+			} 
+			pthread_mutex_unlock (&g_mutex); 
+		}
+		else
+		{ 
+			written = fwrite(ptr, size, nmemb, ji->fp); 
+		} 
+		return written; 
+	} 
 
 	void* job_process(void* arg)
 		{ 

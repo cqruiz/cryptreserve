@@ -1,6 +1,12 @@
 tools/
 tools/*
 bin/
+react/
+dapp/
+cgi/
+obj/
+plugins
 *.o
 *.swp
 ltmain.sh
+*.gch

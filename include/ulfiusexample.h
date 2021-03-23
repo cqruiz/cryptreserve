@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef _U_EXAMPLE_
-#define _U_EXAMPLE_
+#ifndef U_EXAMPLE_
+#define U_EXAMPLE_
 
 /** Define mock yder functions when yder is disabled **/
 #ifdef U_DISABLE_YDER

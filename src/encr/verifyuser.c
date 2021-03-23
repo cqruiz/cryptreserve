@@ -1,4 +1,5 @@
-#include "../../include/verifyuser.h"
+//#include "../../include/verifyuser.h"
+#include "verifyuser.h"
 #include <stdio.h>
 
 bool verifySignature(std::string publicKey, std::string plainText, char* signatureBase64) {
