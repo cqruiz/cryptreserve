@@ -53,3 +53,17 @@ Run install.sh (./install.sh)
 * Libcrypto
 * Libsqlite3
 * Libcurl
+
+### Testing
+
+## Testnet
+APIKey: bd1bGD1QdMHkKgcdkLXwSulDOgZSc6YcuA3mNTdlgiF1ysK
+
+All API keys that you have created are listed below. You may create up to 10 keys for any resource you have access to.
+
+Name maccryptreserve
+Permissions ubiquity
+Owner Ed Vergara
+Created 25/08/2021
+Expires 24/09/2021
+
