@@ -53,6 +53,8 @@ Run install.sh (./install.sh)
 * Libcrypto
 * Libsqlite3
 * Libcurl
+# libmba (solidity.h/hashmap)
+
 
 ### Testing
 
