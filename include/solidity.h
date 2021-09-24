@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <mba/hashmap.h>
+//#include <mba/hashmap.h>
 #include <jansson.h>
 
 struct SolidityFile {
